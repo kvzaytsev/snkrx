@@ -39,10 +39,7 @@ rxStore
 
 const setApple = (s, u) => Object.assign({}, s, {apple: u});
 const setAppleEvent = rxStore.eventCreatorFactory(setApple);
-const setAppleCommand = rxStore.commandCreatorFactory(snake => {
-    let newApple = _.generateApple(snake);
-    setAppleEvent(newApple);
-});
+const setAppleCommand = rxStore.commandCreatorFactory(snake => setAppleEvent(_.generateApple(snake)));
 
 const cutTail = (s, u) => Object.assign({}, s, {snake: u});
 const cutTailEvent = rxStore.eventCreatorFactory(cutTail);
