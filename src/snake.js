@@ -34,17 +34,45 @@ rxStore
         refresh$, reducers.refresh
     )
     .subscribe(state => {
-        console.timeEnd();
         graphics.redraw(state);
-        console.time();
     });
 
-rxStore.toRx(Rx)
-    .map(({snake}) => snake.length)
+const setApple = (s, u) => Object.assign({}, s, {apple: u});
+const setAppleEvent = rxStore.eventCreatorFactory(setApple);
+const setAppleCommand = rxStore.commandCreatorFactory(snake => {
+    let newApple = _.generateApple(snake);
+    setAppleEvent(newApple);
+});
+
+const cutTail = (s, u) => Object.assign({}, s, {snake: u});
+const cutTailEvent = rxStore.eventCreatorFactory(cutTail);
+const cutTailCommand = rxStore.commandCreatorFactory((snake, apple) => {
+    snake.push(apple);
+    cutTailEvent(snake);
+});
+
+
+const store$ = rxStore.toRx(Rx);
+const snakeLength$ = 
+    store$
+        .map(({snake}) => snake.length)
+        .distinct();
+
+store$
+    .distinctKey('snake')
+    .subscribe((state) => {
+        let snake = state.snake.slice(0),
+            head = snake[0].slice(0),
+            anApple = state.apple.slice(0);
+
+        if (_.cellsEqual(head, anApple)) {
+            setAppleCommand(snake);
+            cutTailCommand(snake, anApple);
+        }
+    });   
+
+snakeLength$
     .filter(len => len % 5 === 0)
-    .distinct()
     .subscribe(len => {
-        console.log('Current length: ', len);
-        speedSubject.next(500 - len * 10);
-        // speed = 500 - len * 10;
+       speedSubject.next(500 - len * 10);
     });

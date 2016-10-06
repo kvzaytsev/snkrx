@@ -1,24 +1,23 @@
 import _ from '../util';
 
 const refreshReducer = (state, action) => {
-    let snake = state.snake.slice(0),
+
+    let clone = Object.assign ({}, state),
+        snake = clone.snake.slice(0),
+        direction = clone.direction.slice(0),
         head = snake[0].slice(0),
-        apple = state.apple,
-        newState = Object.assign({}, state);
+        apple = clone.apple.slice(0);
 
-    head[0] = Math.abs((30 + head[0] + state.direction[0]) % 30);
-    head[1] = Math.abs((30 + head[1] + state.direction[1]) % 30); 
+    head[0] = Math.abs((30 + head[0] + direction[0]) % 30);
+    head[1] = Math.abs((30 + head[1] + direction[1]) % 30); 
     snake.unshift(head);
+    snake.pop();
 
-    if (!_.cellsEqual(head, apple)) {
-        snake.pop();
-    } else {
-        newState.apple = _.generateApple(snake);
-    }
-    
-    newState.snake = snake;
-
-    return newState;
+    return {     
+        snake,
+        direction,
+        apple
+    };
 }
 
 export default refreshReducer;

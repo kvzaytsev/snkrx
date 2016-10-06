@@ -10,11 +10,10 @@ const initialApple = _.generateApple(initialSnake);
 const initialState = {
     direction: initialDirection,
     snake: initialSnake,
-    apple: initialApple,
-    lastKey: 0
+    apple: initialApple
 };
 
 const rxStore = storeR(initialState);
 
-
+console.log('store has been created');
 export default rxStore;
