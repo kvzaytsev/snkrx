@@ -26,7 +26,7 @@ const direction$ =
 const refresh$ = 
     speedSubject
         .combineLatest(direction$, speed => speed)
-        .switchMap(speed => Rx.Observable.interval(speed).startWith(null));
+        .switchMap(speed => Rx.Observable.timer(0, speed));
 
 rxStore
     .plug(
