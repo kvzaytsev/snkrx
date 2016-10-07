@@ -1,23 +1,17 @@
 import _ from '../util';
+import GLOBALS from '../globals';
 
 const refreshReducer = (state, action) => {
+    let newSnake = state.snake.slice(0),
+        head = newSnake[0].slice(0);
 
-    let clone = Object.assign ({}, state),
-        snake = clone.snake.slice(0),
-        direction = clone.direction.slice(0),
-        head = snake[0].slice(0),
-        apple = clone.apple.slice(0);
+    newSnake.unshift(shiftCell(head, state.direction));
+    newSnake.pop();
 
-    head[0] = Math.abs((30 + head[0] + direction[0]) % 30);
-    head[1] = Math.abs((30 + head[1] + direction[1]) % 30); 
-    snake.unshift(head);
-    snake.pop();
-
-    return {     
-        snake,
-        direction,
-        apple
-    };
+    return Object.assign({}, state, {snake:newSnake});
 }
+
+const shiftCell = ([cx, cy], [dx, dy]) => [shift(cx, dx), shift(cy, dy)];
+const shift = (c, d) => Math.abs((GLOBALS.FIELD_SIZE + c +d) % GLOBALS.FIELD_SIZE);
 
 export default refreshReducer;

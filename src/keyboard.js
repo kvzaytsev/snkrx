@@ -23,4 +23,4 @@ const isDirectionKey = (keyCode) => {
     return [KEYS.LEFT, KEYS.UP, KEYS.DOWN, KEYS.RIGHT].includes(keyCode)
 }
 
-export {getDirection, isDirectionKey};
+export {getDirection, isDirectionKey, KEYS};

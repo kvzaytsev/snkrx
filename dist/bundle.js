@@ -65,11 +65,15 @@
 	
 	var _util2 = _interopRequireDefault(_util);
 	
-	var _keyboard = __webpack_require__(/*! ./keyboard */ 352);
+	var _keyboard = __webpack_require__(/*! ./keyboard */ 353);
 	
-	var _graphics = __webpack_require__(/*! ./graphics */ 353);
+	var _graphics = __webpack_require__(/*! ./graphics */ 354);
 	
 	var _graphics2 = _interopRequireDefault(_graphics);
+	
+	var _globals = __webpack_require__(/*! ./globals */ 352);
+	
+	var _globals2 = _interopRequireDefault(_globals);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -78,28 +82,30 @@
 	var graphics = new _graphics2.default();
 	graphics.drawGrid();
 	
-	// let speed = 500;
-	
-	var speedSubject = new _rxjs2.default.BehaviorSubject(500);
+	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals2.default.INITIAL_SPEED);
 	var keydownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
-	
-	var direction$ = keydownObservable.map(function (e) {
+	var keys$ = keydownObservable.map(function (e) {
 	    return e.which;
-	}).filter(_keyboard.isDirectionKey).map(function (code) {
-	    return {
-	        direction: (0, _keyboard.getDirection)(code)
-	    };
 	});
 	
-	// const refresh$ = direction$.switchMap(d => Rx.Observable.interval(speed).startWith(null));
+	var pause$ = keys$.filter(function (code) {
+	    return code === _keyboard.KEYS.SPACE;
+	}).scan(function (prev) {
+	    return !prev;
+	}, false);
+	
+	var direction$ = keys$.filter(_keyboard.isDirectionKey).map(function (code) {
+	    return { direction: (0, _keyboard.getDirection)(code) };
+	});
+	
 	var refresh$ = speedSubject.combineLatest(direction$, function (speed) {
 	    return speed;
 	}).switchMap(function (speed) {
-	    return _rxjs2.default.Observable.interval(speed).startWith(null);
+	    return _rxjs2.default.Observable.timer(0, speed);
 	});
 	
 	_state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {
-	    graphics.redraw(state);
+	    return graphics.redraw(state);
 	});
 	
 	var setApple = function setApple(s, u) {
@@ -139,7 +145,7 @@
 	snakeLength$.filter(function (len) {
 	    return len % 5 === 0;
 	}).subscribe(function (len) {
-	    speedSubject.next(500 - len * 10);
+	    speedSubject.next(_globals2.default.INITIAL_SPEED - len * _globals2.default.SPEED_STEP);
 	});
 
 /***/ },
@@ -19579,36 +19585,70 @@
 	    value: true
 	});
 	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
 	var _util = __webpack_require__(/*! ../util */ 348);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
+	var _globals = __webpack_require__(/*! ../globals */ 352);
+	
+	var _globals2 = _interopRequireDefault(_globals);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var refreshReducer = function refreshReducer(state, action) {
+	    var newSnake = state.snake.slice(0),
+	        head = newSnake[0].slice(0);
 	
-	    var clone = Object.assign({}, state),
-	        snake = clone.snake.slice(0),
-	        direction = clone.direction.slice(0),
-	        head = snake[0].slice(0),
-	        apple = clone.apple.slice(0);
+	    newSnake.unshift(shiftCell(head, state.direction));
+	    newSnake.pop();
 	
-	    head[0] = Math.abs((30 + head[0] + direction[0]) % 30);
-	    head[1] = Math.abs((30 + head[1] + direction[1]) % 30);
-	    snake.unshift(head);
-	    snake.pop();
+	    return Object.assign({}, state, { snake: newSnake });
+	};
 	
-	    return {
-	        snake: snake,
-	        direction: direction,
-	        apple: apple
-	    };
+	var shiftCell = function shiftCell(_ref, _ref2) {
+	    var _ref4 = _slicedToArray(_ref, 2);
+	
+	    var cx = _ref4[0];
+	    var cy = _ref4[1];
+	
+	    var _ref3 = _slicedToArray(_ref2, 2);
+	
+	    var dx = _ref3[0];
+	    var dy = _ref3[1];
+	    return [shift(cx, dx), shift(cy, dy)];
+	};
+	var shift = function shift(c, d) {
+	    return Math.abs((_globals2.default.FIELD_SIZE + c + d) % _globals2.default.FIELD_SIZE);
 	};
 	
 	exports.default = refreshReducer;
 
 /***/ },
 /* 352 */
+/*!************************!*\
+  !*** ./src/globals.js ***!
+  \************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var GLOBALS = {
+	    FIELD_SIZE: 30,
+	    CELL_SIZE: 15,
+	    INITIAL_LENGTH: 3,
+	    INITIAL_SPEED: 500,
+	    SPEED_STEP: 10
+	};
+	
+	exports.default = GLOBALS;
+
+/***/ },
+/* 353 */
 /*!*************************!*\
   !*** ./src/keyboard.js ***!
   \*************************/
@@ -19646,9 +19686,10 @@
 	
 	exports.getDirection = getDirection;
 	exports.isDirectionKey = isDirectionKey;
+	exports.KEYS = KEYS;
 
 /***/ },
-/* 353 */
+/* 354 */
 /*!*************************!*\
   !*** ./src/graphics.js ***!
   \*************************/
@@ -19664,7 +19705,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _globals = __webpack_require__(/*! ./globals */ 354);
+	var _globals = __webpack_require__(/*! ./globals */ 352);
 	
 	var _globals2 = _interopRequireDefault(_globals);
 	
@@ -19768,25 +19809,6 @@
 	}();
 	
 	exports.default = CanvasGraphics;
-
-/***/ },
-/* 354 */
-/*!************************!*\
-  !*** ./src/globals.js ***!
-  \************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var GLOBALS = {
-	    FIELD_SIZE: 30,
-	    CELL_SIZE: 10
-	};
-	
-	exports.default = GLOBALS;
 
 /***/ }
 /******/ ]);

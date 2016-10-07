@@ -3,26 +3,25 @@ import Rx from 'rxjs';
 import rxStore from './state';
 import * as reducers from './reducers';
 import _ from './util';
-import {getDirection, isDirectionKey} from './keyboard';
+import {getDirection, isDirectionKey, KEYS} from './keyboard';
 import CanvasGraphics from './graphics';
+import GLOBALS from './globals';
 
 const graphics = new CanvasGraphics();
 graphics.drawGrid();
 
-// let speed = 500;
-
-const speedSubject = new Rx.BehaviorSubject(500);
+const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
 const keydownObservable = Rx.Observable.fromEvent(document, 'keydown');
+const keys$ = keydownObservable.map (e => e.which);
 
-const direction$ = 
-    keydownObservable
-        .map (e => e.which)
+const pause$ = keys$
+        .filter(code => code === KEYS.SPACE)
+        .scan((prev) => !prev, false);
+
+const direction$ = keys$
         .filter(isDirectionKey)
-        .map(code => ({
-            direction: getDirection(code)
-        }));
+        .map(code => ({direction: getDirection(code)}));
 
-// const refresh$ = direction$.switchMap(d => Rx.Observable.interval(speed).startWith(null));
 const refresh$ = 
     speedSubject
         .combineLatest(direction$, speed => speed)
@@ -33,9 +32,7 @@ rxStore
         direction$, reducers.direction,
         refresh$, reducers.refresh
     )
-    .subscribe(state => {
-        graphics.redraw(state);
-    });
+    .subscribe(state => graphics.redraw(state));
 
 const setApple = (s, u) => Object.assign({}, s, {apple: u});
 const setAppleEvent = rxStore.eventCreatorFactory(setApple);
@@ -48,10 +45,8 @@ const cutTailCommand = rxStore.commandCreatorFactory((snake, apple) => {
     cutTailEvent(snake);
 });
 
-
 const store$ = rxStore.toRx(Rx);
-const snakeLength$ = 
-    store$
+const snakeLength$ = store$
         .map(({snake}) => snake.length)
         .distinct();
 
@@ -71,5 +66,5 @@ store$
 snakeLength$
     .filter(len => len % 5 === 0)
     .subscribe(len => {
-       speedSubject.next(500 - len * 10);
+       speedSubject.next(GLOBALS.INITIAL_SPEED - len * GLOBALS.SPEED_STEP);
     });
