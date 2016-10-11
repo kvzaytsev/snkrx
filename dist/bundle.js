@@ -88,14 +88,11 @@
 	    return e.which;
 	});
 	
-	var paused = false;
 	var pause$ = keys$.filter(function (code) {
 	    return code === _keyboard.KEYS.SPACE;
 	}).scan(function (prev) {
 	    return !prev;
-	}, paused).subscribe(function (v) {
-	    return paused = v;
-	});
+	}, false);
 	
 	var direction$ = keys$.filter(_keyboard.isDirectionKey).map(function (code) {
 	    return { direction: (0, _keyboard.getDirection)(code) };
@@ -106,8 +103,10 @@
 	    return speed;
 	}).switchMap(function (speed) {
 	    return _rxjs2.default.Observable.timer(0, speed);
-	}).filter(function () {
+	}).withLatestFrom(pause$, function (smth, paused) {
 	    return paused;
+	}).filter(function (p) {
+	    return p;
 	});
 	
 	_state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {
