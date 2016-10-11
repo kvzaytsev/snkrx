@@ -1,4 +1,13 @@
+body {
+    background-color: rgba(43, 62, 79, 0.9);
+}
+
+#playing-layer {
+    width:452px;
+    margin: 0 auto;
+}
+
 #sCanvas {
-    border: solid 1px black;
-    background-color: #2B3E4F;
+    border: solid 2px #cccccc;
+    border-radius: 2px;
 }

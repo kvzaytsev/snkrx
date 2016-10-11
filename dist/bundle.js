@@ -88,20 +88,26 @@
 	    return e.which;
 	});
 	
+	var paused = false;
 	var pause$ = keys$.filter(function (code) {
 	    return code === _keyboard.KEYS.SPACE;
 	}).scan(function (prev) {
 	    return !prev;
-	}, false);
+	}, paused).subscribe(function (v) {
+	    return paused = v;
+	});
 	
 	var direction$ = keys$.filter(_keyboard.isDirectionKey).map(function (code) {
 	    return { direction: (0, _keyboard.getDirection)(code) };
 	});
 	
-	var refresh$ = speedSubject.combineLatest(direction$, function (speed) {
+	var moving$ = _rxjs2.default.Observable.merge(speedSubject, direction$);
+	var refresh$ = speedSubject.combineLatest(moving$, function (speed) {
 	    return speed;
 	}).switchMap(function (speed) {
 	    return _rxjs2.default.Observable.timer(0, speed);
+	}).filter(function () {
+	    return paused;
 	});
 	
 	_state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {

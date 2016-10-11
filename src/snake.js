@@ -14,18 +14,22 @@ const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
 const keydownObservable = Rx.Observable.fromEvent(document, 'keydown');
 const keys$ = keydownObservable.map (e => e.which);
 
+let paused = false;
 const pause$ = keys$
         .filter(code => code === KEYS.SPACE)
-        .scan((prev) => !prev, false);
+        .scan((prev) => !prev, paused)
+        .subscribe(v => paused = v);
 
 const direction$ = keys$
         .filter(isDirectionKey)
         .map(code => ({direction: getDirection(code)}));
 
+const moving$ =  Rx.Observable.merge(speedSubject, direction$);
 const refresh$ = 
-    speedSubject
-        .combineLatest(direction$, speed => speed)
-        .switchMap(speed => Rx.Observable.timer(0, speed));
+        speedSubject
+            .combineLatest(moving$, speed => speed)
+            .switchMap(speed => Rx.Observable.timer(0, speed))
+            .filter(()=>paused);
 
 rxStore
     .plug(
