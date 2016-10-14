@@ -139,13 +139,6 @@
 	}).subscribe(function (len) {
 	    speedSubject.next(_globals2.default.INITIAL_SPEED - len * _globals2.default.SPEED_STEP);
 	});
-	
-	var snake$ = store$.map(function (_ref2) {
-	    var snake = _ref2.snake;
-	    return snake;
-	}).distinctKey('length').filter(function (snake) {
-	    return snake.length % 4 === 0;
-	}).subscribe(function (snake) {});
 
 /***/ },
 /* 1 */

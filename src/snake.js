@@ -62,12 +62,4 @@ snakeLength$
     .filter(len => len % 5 === 0)
     .subscribe(len => {
        speedSubject.next(GLOBALS.INITIAL_SPEED - len * GLOBALS.SPEED_STEP);
-    });
-
-const snake$ = store$
-    .map(({snake}) => snake)
-    .distinctKey('length')
-    .filter(snake => snake.length % 4 === 0)
-    .subscribe(snake => {
-
-    });
+    }); 
