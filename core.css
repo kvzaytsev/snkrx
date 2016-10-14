@@ -2,12 +2,23 @@ body {
     background-color: rgba(43, 62, 79, 0.9);
 }
 
+.main-view-wrapper {
+    display: table;
+    width: 100%;
+    height: 100%;
+}
+
+.main-view {
+    display: table-cell;
+    vertical-align: middle;
+}
+
 #playing-layer {
     width:452px;
     margin: 0 auto;
 }
 
 #sCanvas {
-    border: solid 2px #cccccc;
+    border: solid 2px #A3B7C9 /* #cccccc */;
     border-radius: 2px;
 }

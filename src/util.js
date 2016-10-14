@@ -44,6 +44,16 @@ const Utils = {
             return this.generateApple(snake);
         }
         return cell;
+    },
+
+    checkSelfEating (snake) {
+        let copy = snake.slice(0),
+            [head] = copy.splice(0,1);
+
+        return !!copy.find( segment => { 
+            
+            return this.cellsEqual(head,segment);
+        });
     }
 }
 

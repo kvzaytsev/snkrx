@@ -61,6 +61,10 @@
 	
 	var reducers = _interopRequireWildcard(_reducers);
 	
+	var _commands = __webpack_require__(/*! ./commands */ 355);
+	
+	var commands = _interopRequireWildcard(_commands);
+	
 	var _util = __webpack_require__(/*! ./util */ 348);
 	
 	var _util2 = _interopRequireDefault(_util);
@@ -113,23 +117,6 @@
 	    return graphics.redraw(state);
 	});
 	
-	var setApple = function setApple(s, u) {
-	    return Object.assign({}, s, { apple: u });
-	};
-	var setAppleEvent = _state2.default.eventCreatorFactory(setApple);
-	var setAppleCommand = _state2.default.commandCreatorFactory(function (snake) {
-	    return setAppleEvent(_util2.default.generateApple(snake));
-	});
-	
-	var cutTail = function cutTail(s, u) {
-	    return Object.assign({}, s, { snake: u });
-	};
-	var cutTailEvent = _state2.default.eventCreatorFactory(cutTail);
-	var cutTailCommand = _state2.default.commandCreatorFactory(function (snake, apple) {
-	    snake.push(apple);
-	    cutTailEvent(snake);
-	});
-	
 	var store$ = _state2.default.toRx(_rxjs2.default);
 	var snakeLength$ = store$.map(function (_ref) {
 	    var snake = _ref.snake;
@@ -141,9 +128,9 @@
 	        head = snake[0].slice(0),
 	        anApple = state.apple.slice(0);
 	
-	    if (_util2.default.cellsEqual(head, anApple)) {
-	        setAppleCommand(snake);
-	        cutTailCommand(snake, anApple);
+	    if (_util2.default.checkSelfEating(snake)) {} else if (_util2.default.cellsEqual(head, anApple)) {
+	        commands.eatApple(snake, anApple);
+	        commands.setApple(snake);
 	    }
 	});
 	
@@ -152,6 +139,13 @@
 	}).subscribe(function (len) {
 	    speedSubject.next(_globals2.default.INITIAL_SPEED - len * _globals2.default.SPEED_STEP);
 	});
+	
+	var snake$ = store$.map(function (_ref2) {
+	    var snake = _ref2.snake;
+	    return snake;
+	}).distinctKey('length').filter(function (snake) {
+	    return snake.length % 4 === 0;
+	}).subscribe(function (snake) {});
 
 /***/ },
 /* 1 */
@@ -19452,7 +19446,8 @@
 	var initialState = {
 	    direction: initialDirection,
 	    snake: initialSnake,
-	    apple: initialApple
+	    apple: initialApple,
+	    poops: []
 	};
 	
 	var rxStore = (0, _rstore.storeR)(initialState);
@@ -19481,6 +19476,9 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
 	var FIELD_SIZE = 30;
 	var INITIAL_SNAKE_SIZE = 3;
 	
@@ -19527,6 +19525,23 @@
 	            return this.generateApple(snake);
 	        }
 	        return cell;
+	    },
+	    checkSelfEating: function checkSelfEating(snake) {
+	        var _this2 = this;
+	
+	        var copy = snake.slice(0);
+	
+	        var _copy$splice = copy.splice(0, 1);
+	
+	        var _copy$splice2 = _slicedToArray(_copy$splice, 1);
+	
+	        var head = _copy$splice2[0];
+	
+	
+	        return !!copy.find(function (segment) {
+	
+	            return _this2.cellsEqual(head, segment);
+	        });
 	    }
 	};
 	
@@ -19726,10 +19741,16 @@
 	    _createClass(CanvasGraphics, [{
 	        key: 'redraw',
 	        value: function redraw(_ref) {
+	            var _this = this;
+	
 	            var snake = _ref.snake;
 	            var apple = _ref.apple;
-	
+	            var poops = _ref.poops;
+	            ;
 	            this.clear();
+	            poops.forEach(function (poop) {
+	                return _this.drawPoop(poop);
+	            });
 	            this.drawApple(apple);
 	            this.drawSnake(snake);
 	        }
@@ -19814,6 +19835,139 @@
 	}();
 	
 	exports.default = CanvasGraphics;
+
+/***/ },
+/* 355 */
+/*!*******************************!*\
+  !*** ./src/commands/index.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.setPoop = exports.eatApple = exports.setApple = undefined;
+	
+	var _setApple = __webpack_require__(/*! ./setApple */ 356);
+	
+	var _setApple2 = _interopRequireDefault(_setApple);
+	
+	var _eatApple = __webpack_require__(/*! ./eatApple */ 359);
+	
+	var _eatApple2 = _interopRequireDefault(_eatApple);
+	
+	var _setPoop = __webpack_require__(/*! ./setPoop */ 358);
+	
+	var _setPoop2 = _interopRequireDefault(_setPoop);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.setApple = _setApple2.default;
+	exports.eatApple = _eatApple2.default;
+	exports.setPoop = _setPoop2.default;
+
+/***/ },
+/* 356 */
+/*!**********************************!*\
+  !*** ./src/commands/setApple.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _state = __webpack_require__(/*! ../state */ 346);
+	
+	var _state2 = _interopRequireDefault(_state);
+	
+	var _util = __webpack_require__(/*! ../util */ 348);
+	
+	var _util2 = _interopRequireDefault(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var setApple = function setApple(s, u) {
+	  return Object.assign({}, s, { apple: u });
+	};
+	var setAppleEvent = _state2.default.eventCreatorFactory(setApple);
+	var setAppleCommand = _state2.default.commandCreatorFactory(function (snake) {
+	  return setAppleEvent(_util2.default.generateApple(snake));
+	});
+	
+	exports.default = setAppleCommand;
+
+/***/ },
+/* 357 */,
+/* 358 */
+/*!*********************************!*\
+  !*** ./src/commands/setPoop.js ***!
+  \*********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _state = __webpack_require__(/*! ../state */ 346);
+	
+	var _state2 = _interopRequireDefault(_state);
+	
+	var _util = __webpack_require__(/*! ../util */ 348);
+	
+	var _util2 = _interopRequireDefault(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var setPoop = function setPoop(s, u) {
+	  return Object.assign({}, s, { poop: u });
+	};
+	var setPoopEvent = _state2.default.eventCreatorFactory(setPoop);
+	var setPoopCommand = _state2.default.commandCreatorFactory(function (snake) {
+	  return setPoopEvent(snake.slice(-2, -1)[0]);
+	});
+	
+	exports.default = setPoopCommand;
+
+/***/ },
+/* 359 */
+/*!**********************************!*\
+  !*** ./src/commands/eatApple.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _state = __webpack_require__(/*! ../state */ 346);
+	
+	var _state2 = _interopRequireDefault(_state);
+	
+	var _util = __webpack_require__(/*! ../util */ 348);
+	
+	var _util2 = _interopRequireDefault(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var eatApple = function eatApple(s, u) {
+	    return Object.assign({}, s, { snake: u });
+	};
+	var eatAppleEvent = _state2.default.eventCreatorFactory(eatApple);
+	var eatAppleCommand = _state2.default.commandCreatorFactory(function (snake, apple) {
+	    snake.push(apple);
+	    eatAppleEvent(snake);
+	});
+	
+	exports.default = eatAppleCommand;
 
 /***/ }
 /******/ ]);

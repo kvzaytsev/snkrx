@@ -2,6 +2,7 @@ import Rx from 'rxjs';
 
 import rxStore from './state';
 import * as reducers from './reducers';
+import * as commands from './commands';
 import _ from './util';
 import {getDirection, isDirectionKey, KEYS} from './keyboard';
 import CanvasGraphics from './graphics';
@@ -37,17 +38,6 @@ rxStore
     )
     .subscribe(state => graphics.redraw(state));
 
-const setApple = (s, u) => Object.assign({}, s, {apple: u});
-const setAppleEvent = rxStore.eventCreatorFactory(setApple);
-const setAppleCommand = rxStore.commandCreatorFactory(snake => setAppleEvent(_.generateApple(snake)));
-
-const cutTail = (s, u) => Object.assign({}, s, {snake: u});
-const cutTailEvent = rxStore.eventCreatorFactory(cutTail);
-const cutTailCommand = rxStore.commandCreatorFactory((snake, apple) => {
-    snake.push(apple);
-    cutTailEvent(snake);
-});
-
 const store$ = rxStore.toRx(Rx);
 const snakeLength$ = store$
         .map(({snake}) => snake.length)
@@ -60,14 +50,24 @@ store$
             head = snake[0].slice(0),
             anApple = state.apple.slice(0);
 
-        if (_.cellsEqual(head, anApple)) {
-            setAppleCommand(snake);
-            cutTailCommand(snake, anApple);
-        }
+        if (_.checkSelfEating(snake)) {
+            
+        } else if (_.cellsEqual(head, anApple)) {
+            commands.eatApple(snake, anApple);
+            commands.setApple(snake);
+        } 
     });   
 
 snakeLength$
     .filter(len => len % 5 === 0)
     .subscribe(len => {
        speedSubject.next(GLOBALS.INITIAL_SPEED - len * GLOBALS.SPEED_STEP);
+    });
+
+const snake$ = store$
+    .map(({snake}) => snake)
+    .distinctKey('length')
+    .filter(snake => snake.length % 4 === 0)
+    .subscribe(snake => {
+
     });

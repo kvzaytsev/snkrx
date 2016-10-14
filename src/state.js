@@ -10,7 +10,8 @@ const initialApple = _.generateApple(initialSnake);
 const initialState = {
     direction: initialDirection,
     snake: initialSnake,
-    apple: initialApple
+    apple: initialApple,
+    poops: []
 };
 
 const rxStore = storeR(initialState);
