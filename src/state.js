@@ -1,4 +1,4 @@
-import {store, storeR} from 'rstore';
+import {store, storeR, devtools} from 'rstore';
 import Rx from 'rxjs';
 
 import _ from './util';
@@ -15,6 +15,9 @@ const initialState = {
 };
 
 const rxStore = storeR(initialState);
+if (typeof window.devToolsExtension === 'function') {
+    devtools.addStore(rxStore, initialState);
+}
 
 console.log('store has been created');
 export default rxStore;

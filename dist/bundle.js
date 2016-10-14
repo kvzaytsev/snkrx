@@ -19451,6 +19451,9 @@
 	};
 	
 	var rxStore = (0, _rstore.storeR)(initialState);
+	if (typeof window.devToolsExtension === 'function') {
+	    _rstore.devtools.addStore(rxStore, initialState);
+	}
 	
 	console.log('store has been created');
 	exports.default = rxStore;
