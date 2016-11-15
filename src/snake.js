@@ -1,6 +1,6 @@
 import Rx from 'rxjs';
 
-import {initStore} from './state';
+import rxStore from './state';
 import * as reducers from './reducers';
 import * as commands from './commands';
 import _ from './util';
@@ -10,8 +10,6 @@ import GLOBALS from './globals';
 
 const graphics = new CanvasGraphics();
 graphics.drawGrid();
-
-const rxStore = initStore();
 
 const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
 const keydownObservable = Rx.Observable.fromEvent(document, 'keydown');

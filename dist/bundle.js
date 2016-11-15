@@ -55,6 +55,8 @@
 	
 	var _state = __webpack_require__(/*! ./state */ 346);
 	
+	var _state2 = _interopRequireDefault(_state);
+	
 	var _reducers = __webpack_require__(/*! ./reducers */ 349);
 	
 	var reducers = _interopRequireWildcard(_reducers);
@@ -84,8 +86,6 @@
 	var graphics = new _graphics2.default();
 	graphics.drawGrid();
 	
-	var rxStore = (0, _state.initStore)();
-	
 	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals2.default.INITIAL_SPEED);
 	var keydownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
 	var keys$ = keydownObservable.map(function (e) {
@@ -113,11 +113,11 @@
 	    return p;
 	});
 	
-	rxStore.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {
+	_state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {
 	    return graphics.redraw(state);
 	});
 	
-	var store$ = rxStore.toRx(_rxjs2.default);
+	var store$ = _state2.default.toRx(_rxjs2.default);
 	var snakeLength$ = store$.map(function (_ref) {
 	    var snake = _ref.snake;
 	    return snake.length;
@@ -19436,18 +19436,21 @@
 	
 	var initStore = function initStore() {
 	    var initialDirection = _util2.default.randomDirection(),
-	        initialSnake = _util2.default.initSnake(initialDirection);
-	    initialApple = _util2.default.generateApple(initialSnake), initialState = {
+	        initialSnake = _util2.default.initSnake(initialDirection),
+	        initialApple = _util2.default.generateApple(initialSnake),
+	        initialState = {
 	        direction: initialDirection,
 	        snake: initialSnake,
 	        apple: initialApple,
 	        poops: []
 	    };
 	
-	    var rxStore = (0, _rstore.storeR)(initialState);
+	    return (0, _rstore.storeR)(initialState);
 	};
 	
-	exports.default = initStore;
+	var rxStore = initStore();
+	
+	exports.default = rxStore;
 
 /***/ },
 /* 347 */

@@ -5,7 +5,7 @@ import _ from './util';
 
 const initStore = () => {
     let initialDirection = _.randomDirection(),
-        initialSnake = _.initSnake(initialDirection);
+        initialSnake = _.initSnake(initialDirection),
         initialApple = _.generateApple(initialSnake),
         initialState = {
             direction: initialDirection,
@@ -14,7 +14,9 @@ const initStore = () => {
             poops: []
         };
 
-    const rxStore = storeR(initialState);
+    return storeR(initialState);
 }
 
-export default initStore;
+const rxStore = initStore();
+
+export default rxStore;
