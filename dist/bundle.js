@@ -55,8 +55,6 @@
 	
 	var _state = __webpack_require__(/*! ./state */ 346);
 	
-	var _state2 = _interopRequireDefault(_state);
-	
 	var _reducers = __webpack_require__(/*! ./reducers */ 349);
 	
 	var reducers = _interopRequireWildcard(_reducers);
@@ -69,9 +67,9 @@
 	
 	var _util2 = _interopRequireDefault(_util);
 	
-	var _keyboard = __webpack_require__(/*! ./keyboard */ 358);
+	var _keyboard = __webpack_require__(/*! ./keyboard */ 357);
 	
-	var _graphics = __webpack_require__(/*! ./graphics */ 359);
+	var _graphics = __webpack_require__(/*! ./graphics */ 358);
 	
 	var _graphics2 = _interopRequireDefault(_graphics);
 	
@@ -85,6 +83,8 @@
 	
 	var graphics = new _graphics2.default();
 	graphics.drawGrid();
+	
+	var rxStore = (0, _state.initStore)();
 	
 	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals2.default.INITIAL_SPEED);
 	var keydownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
@@ -113,11 +113,11 @@
 	    return p;
 	});
 	
-	_state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {
+	rxStore.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {
 	    return graphics.redraw(state);
 	});
 	
-	var store$ = _state2.default.toRx(_rxjs2.default);
+	var store$ = rxStore.toRx(_rxjs2.default);
 	var snakeLength$ = store$.map(function (_ref) {
 	    var snake = _ref.snake;
 	    return snake.length;
@@ -133,9 +133,7 @@
 	    if (_util2.default.cellsEqual(head, anApple)) {
 	        commands.eatApple(snake, anApple);
 	        commands.setApple(snake);
-	    } else if (_util2.default.checkSelfEating(snake)) {
-	        debugger;
-	    }
+	    } else if (_util2.default.checkSelfEating(snake)) {}
 	});
 	
 	snakeLength$.filter(function (len) {
@@ -19436,24 +19434,20 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var initialDirection = _util2.default.randomDirection();
-	var initialSnake = _util2.default.initSnake(initialDirection);
-	var initialApple = _util2.default.generateApple(initialSnake);
+	var initStore = function initStore() {
+	    var initialDirection = _util2.default.randomDirection(),
+	        initialSnake = _util2.default.initSnake(initialDirection);
+	    initialApple = _util2.default.generateApple(initialSnake), initialState = {
+	        direction: initialDirection,
+	        snake: initialSnake,
+	        apple: initialApple,
+	        poops: []
+	    };
 	
-	var initialState = {
-	    direction: initialDirection,
-	    snake: initialSnake,
-	    apple: initialApple,
-	    poops: []
+	    var rxStore = (0, _rstore.storeR)(initialState);
 	};
 	
-	var rxStore = (0, _rstore.storeR)(initialState);
-	if (typeof window.devToolsExtension === 'function') {
-	    _rstore.devtools.addStore(rxStore, initialState);
-	}
-	
-	console.log('store has been created');
-	exports.default = rxStore;
+	exports.default = initStore;
 
 /***/ },
 /* 347 */
@@ -19799,8 +19793,7 @@
 	exports.default = setPoopCommand;
 
 /***/ },
-/* 357 */,
-/* 358 */
+/* 357 */
 /*!*************************!*\
   !*** ./src/keyboard.js ***!
   \*************************/
@@ -19841,7 +19834,7 @@
 	exports.KEYS = KEYS;
 
 /***/ },
-/* 359 */
+/* 358 */
 /*!*************************!*\
   !*** ./src/graphics.js ***!
   \*************************/
