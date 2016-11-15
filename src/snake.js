@@ -1,6 +1,6 @@
 import Rx from 'rxjs';
 
-import rxStore from './state';
+import {initStore} from './state';
 import * as reducers from './reducers';
 import * as commands from './commands';
 import _ from './util';
@@ -11,13 +11,15 @@ import GLOBALS from './globals';
 const graphics = new CanvasGraphics();
 graphics.drawGrid();
 
+const rxStore = initStore();
+
 const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
 const keydownObservable = Rx.Observable.fromEvent(document, 'keydown');
 const keys$ = keydownObservable.map (e => e.which);
 
 const pause$ = keys$
         .filter(code => code === KEYS.SPACE)
-        .scan((prev) => !prev, false);
+        .scan(prev => !prev, false);
 
 const direction$ = keys$
         .filter(isDirectionKey)
@@ -44,19 +46,19 @@ const snakeLength$ = store$
         .distinct();
 
 store$
-    .distinctKey('snake')
-    .subscribe((state) => {
+    .sample(refresh$, state => state)
+    .subscribe(state => {
         let snake = state.snake.slice(0),
             head = snake[0].slice(0),
             anApple = state.apple.slice(0);
 
-        if (_.checkSelfEating(snake)) {
-            
-        } else if (_.cellsEqual(head, anApple)) {
+        if (_.cellsEqual(head, anApple)) {
             commands.eatApple(snake, anApple);
             commands.setApple(snake);
+        } else if (_.checkSelfEating(snake)) {
+         
         } 
-    });   
+    });
 
 snakeLength$
     .filter(len => len % 5 === 0)

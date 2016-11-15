@@ -50,10 +50,7 @@ const Utils = {
         let copy = snake.slice(0),
             [head] = copy.splice(0,1);
 
-        return !!copy.find( segment => { 
-            
-            return this.cellsEqual(head,segment);
-        });
+        return !!copy.find( segment => this.cellsEqual(head,segment));
     }
 }
 

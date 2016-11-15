@@ -3,21 +3,18 @@ import Rx from 'rxjs';
 
 import _ from './util';
 
-const initialDirection = _.randomDirection();
-const initialSnake = _.initSnake(initialDirection);
-const initialApple = _.generateApple(initialSnake);
+const initStore = () => {
+    let initialDirection = _.randomDirection(),
+        initialSnake = _.initSnake(initialDirection);
+        initialApple = _.generateApple(initialSnake),
+        initialState = {
+            direction: initialDirection,
+            snake: initialSnake,
+            apple: initialApple,
+            poops: []
+        };
 
-const initialState = {
-    direction: initialDirection,
-    snake: initialSnake,
-    apple: initialApple,
-    poops: []
-};
-
-const rxStore = storeR(initialState);
-if (typeof window.devToolsExtension === 'function') {
-    devtools.addStore(rxStore, initialState);
+    const rxStore = storeR(initialState);
 }
 
-console.log('store has been created');
-export default rxStore;
+export default initStore;

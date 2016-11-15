@@ -13,7 +13,7 @@ body {
     vertical-align: middle;
 }
 
-#playing-layer {
+.field {
     width:452px;
     margin: 0 auto;
 }
