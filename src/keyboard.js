@@ -8,14 +8,14 @@ const KEYS = {
 
 const getDirection = (keyCode) => {
     switch (keyCode) {
-        case KEYS.LEFT:
-            return [-1,0];
-        case KEYS.UP:
-            return [0,-1];
-        case KEYS.DOWN:
-            return [0,1];
-        case KEYS.RIGHT:
-            return [1,0];
+    case KEYS.LEFT:
+        return [-1,0];
+    case KEYS.UP:
+        return [0,-1];
+    case KEYS.DOWN:
+        return [0,1];
+    case KEYS.RIGHT:
+        return [1,0];
     }
 }
 

@@ -1,9 +1,9 @@
-import rxStore from '../state';
-import _ from '../util';
+import {lens}  from 'rstore';
+import {eventCreatorFactory, commandCreatorFactory} from 'stk';
 
-const cutTail = (s, u) => Object.assign({}, s, {snake: u});
-const cutTailEvent = rxStore.eventCreatorFactory(cutTail);
-const cutTailCommand = rxStore.commandCreatorFactory(snake => {
+const snakeL = lens('snake');
+const cutTailEvent = eventCreatorFactory(snakeL.set);
+const cutTailCommand = commandCreatorFactory(snake => {
     snake.pop();
     cutTailEvent(snake);
 });

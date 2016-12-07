@@ -1,8 +1,9 @@
-import rxStore from '../state';
+import {lens}  from 'rstore';
+import {eventCreatorFactory, commandCreatorFactory} from 'stk';
 import _ from '../util';
 
-const setPoop = (s, u) => Object.assign({}, s, {poop: u});
-const setPoopEvent = rxStore.eventCreatorFactory(setPoop);
-const setPoopCommand = rxStore.commandCreatorFactory((snake) => setPoopEvent(snake.slice(-2,-1)[0]));
+const poopL = lens('poop');
+const setPoopEvent = eventCreatorFactory(poopL.set);
+const setPoopCommand = commandCreatorFactory((snake) => setPoopEvent(snake.slice(-2,-1)[0]));
 
 export default setPoopCommand;

@@ -4,11 +4,9 @@ class CanvasGraphics {
 
     redraw ({
         snake,
-        apple,
-        poops
-    }) {;
+        apple
+    }) {
         this.clear();
-        poops.forEach(poop => this.drawPoop(poop));
         this.drawApple(apple);
         this.drawSnake(snake);
     }

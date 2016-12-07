@@ -9,11 +9,19 @@ import CanvasGraphics from './graphics';
 import GLOBALS from './globals';
 
 const graphics = new CanvasGraphics();
+
+commands.initState();
 graphics.drawGrid();
 
 const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
-const keydownObservable = Rx.Observable.fromEvent(document, 'keydown');
-const keys$ = keydownObservable.map (e => e.which);
+const keyDownObservable = Rx.Observable.fromEvent(document, 'keydown');
+const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
+const keys$ = keyDownObservable.map (e => e.which);
+
+restartObservable.subscribe(() => {
+    commands.initState();
+    speedSubject.next(GLOBALS.INITIAL_SPEED);
+});
 
 const pause$ = keys$
         .filter(code => code === KEYS.SPACE)
@@ -39,9 +47,7 @@ rxStore
     .subscribe(state => graphics.redraw(state));
 
 const store$ = rxStore.toRx(Rx);
-const snakeLength$ = store$
-        .map(({snake}) => snake.length)
-        .distinct();
+
 
 store$
     .sample(refresh$, state => state)
@@ -58,8 +64,20 @@ store$
         } 
     });
 
+const snakeLength$ = store$
+    .map(({snake}) => snake.length)
+    .distinct();
+
+snakeLength$.subscribe(len => {
+   document.querySelector('span.length').innerHTML = String(len);
+});
+
 snakeLength$
     .filter(len => len % 5 === 0)
     .subscribe(len => {
-       speedSubject.next(GLOBALS.INITIAL_SPEED - len * GLOBALS.SPEED_STEP);
-    }); 
+        let levelSpan = document.querySelector('span.level'),
+            currentLevel = parseInt(levelSpan.innerHTML);
+
+        speedSubject.next(GLOBALS.INITIAL_SPEED - len * GLOBALS.SPEED_STEP);
+        levelSpan.innerHTML = String(++currentLevel);
+    });

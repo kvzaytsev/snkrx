@@ -57,25 +57,25 @@
 	
 	var _state2 = _interopRequireDefault(_state);
 	
-	var _reducers = __webpack_require__(/*! ./reducers */ 349);
+	var _reducers = __webpack_require__(/*! ./reducers */ 348);
 	
 	var reducers = _interopRequireWildcard(_reducers);
 	
-	var _commands = __webpack_require__(/*! ./commands */ 353);
+	var _commands = __webpack_require__(/*! ./commands */ 352);
 	
 	var commands = _interopRequireWildcard(_commands);
 	
-	var _util = __webpack_require__(/*! ./util */ 348);
+	var _util = __webpack_require__(/*! ./util */ 354);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
-	var _keyboard = __webpack_require__(/*! ./keyboard */ 357);
+	var _keyboard = __webpack_require__(/*! ./keyboard */ 367);
 	
-	var _graphics = __webpack_require__(/*! ./graphics */ 358);
+	var _graphics = __webpack_require__(/*! ./graphics */ 368);
 	
 	var _graphics2 = _interopRequireDefault(_graphics);
 	
-	var _globals = __webpack_require__(/*! ./globals */ 352);
+	var _globals = __webpack_require__(/*! ./globals */ 351);
 	
 	var _globals2 = _interopRequireDefault(_globals);
 	
@@ -84,12 +84,20 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var graphics = new _graphics2.default();
+	
+	commands.initState();
 	graphics.drawGrid();
 	
 	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals2.default.INITIAL_SPEED);
-	var keydownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
-	var keys$ = keydownObservable.map(function (e) {
+	var keyDownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
+	var restartObservable = _rxjs2.default.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
+	var keys$ = keyDownObservable.map(function (e) {
 	    return e.which;
+	});
+	
+	restartObservable.subscribe(function () {
+	    commands.initState();
+	    speedSubject.next(_globals2.default.INITIAL_SPEED);
 	});
 	
 	var pause$ = keys$.filter(function (code) {
@@ -118,10 +126,6 @@
 	});
 	
 	var store$ = _state2.default.toRx(_rxjs2.default);
-	var snakeLength$ = store$.map(function (_ref) {
-	    var snake = _ref.snake;
-	    return snake.length;
-	}).distinct();
 	
 	store$.sample(refresh$, function (state) {
 	    return state;
@@ -136,10 +140,23 @@
 	    } else if (_util2.default.checkSelfEating(snake)) {}
 	});
 	
+	var snakeLength$ = store$.map(function (_ref) {
+	    var snake = _ref.snake;
+	    return snake.length;
+	}).distinct();
+	
+	snakeLength$.subscribe(function (len) {
+	    document.querySelector('span.length').innerHTML = String(len);
+	});
+	
 	snakeLength$.filter(function (len) {
 	    return len % 5 === 0;
 	}).subscribe(function (len) {
+	    var levelSpan = document.querySelector('span.level'),
+	        currentLevel = parseInt(levelSpan.innerHTML);
+	
 	    speedSubject.next(_globals2.default.INITIAL_SPEED - len * _globals2.default.SPEED_STEP);
+	    levelSpan.innerHTML = String(++currentLevel);
 	});
 
 /***/ },
@@ -19424,25 +19441,11 @@
 	
 	var _rstore = __webpack_require__(/*! rstore */ 347);
 	
-	var _rxjs = __webpack_require__(/*! rxjs */ 1);
-	
-	var _rxjs2 = _interopRequireDefault(_rxjs);
-	
-	var _util = __webpack_require__(/*! ./util */ 348);
-	
-	var _util2 = _interopRequireDefault(_util);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
 	var initStore = function initStore() {
-	    var initialDirection = _util2.default.randomDirection(),
-	        initialSnake = _util2.default.initSnake(initialDirection),
-	        initialApple = _util2.default.generateApple(initialSnake),
-	        initialState = {
-	        direction: initialDirection,
-	        snake: initialSnake,
-	        apple: initialApple,
-	        poops: []
+	    var initialState = {
+	        direction: null,
+	        snake: null,
+	        apple: null
 	    };
 	
 	    return (0, _rstore.storeR)(initialState);
@@ -19463,6 +19466,192 @@
 
 /***/ },
 /* 348 */
+/*!*******************************!*\
+  !*** ./src/reducers/index.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.refresh = exports.direction = undefined;
+	
+	var _direction = __webpack_require__(/*! ./direction */ 349);
+	
+	var _direction2 = _interopRequireDefault(_direction);
+	
+	var _refresh = __webpack_require__(/*! ./refresh */ 350);
+	
+	var _refresh2 = _interopRequireDefault(_refresh);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.direction = _direction2.default;
+	exports.refresh = _refresh2.default;
+
+/***/ },
+/* 349 */
+/*!***********************************!*\
+  !*** ./src/reducers/direction.js ***!
+  \***********************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var directionReducer = function directionReducer(state, action) {
+	    return Object.assign({}, state, { direction: action.direction });
+	};
+	
+	exports.default = directionReducer;
+
+/***/ },
+/* 350 */
+/*!*********************************!*\
+  !*** ./src/reducers/refresh.js ***!
+  \*********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
+	var _globals = __webpack_require__(/*! ../globals */ 351);
+	
+	var _globals2 = _interopRequireDefault(_globals);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var refreshReducer = function refreshReducer(state, action) {
+	    var newSnake = state.snake.slice(0),
+	        head = newSnake[0].slice(0);
+	
+	    newSnake.unshift(shiftCell(head, state.direction));
+	    newSnake.pop();
+	
+	    return Object.assign({}, state, { snake: newSnake });
+	};
+	
+	var shiftCell = function shiftCell(_ref, _ref2) {
+	    var _ref4 = _slicedToArray(_ref, 2);
+	
+	    var cx = _ref4[0];
+	    var cy = _ref4[1];
+	
+	    var _ref3 = _slicedToArray(_ref2, 2);
+	
+	    var dx = _ref3[0];
+	    var dy = _ref3[1];
+	    return [shift(cx, dx), shift(cy, dy)];
+	};
+	var shift = function shift(c, d) {
+	    return Math.abs((_globals2.default.FIELD_SIZE + c + d) % _globals2.default.FIELD_SIZE);
+	};
+	
+	exports.default = refreshReducer;
+
+/***/ },
+/* 351 */
+/*!************************!*\
+  !*** ./src/globals.js ***!
+  \************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var GLOBALS = {
+	    FIELD_SIZE: 30,
+	    CELL_SIZE: 15,
+	    INITIAL_LENGTH: 3,
+	    INITIAL_SPEED: 500,
+	    SPEED_STEP: 10
+	};
+	
+	exports.default = GLOBALS;
+
+/***/ },
+/* 352 */
+/*!*******************************!*\
+  !*** ./src/commands/index.js ***!
+  \*******************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.initState = exports.setPoop = exports.eatApple = exports.setApple = undefined;
+	
+	var _setApple = __webpack_require__(/*! ./setApple */ 353);
+	
+	var _setApple2 = _interopRequireDefault(_setApple);
+	
+	var _eatApple = __webpack_require__(/*! ./eatApple */ 355);
+	
+	var _eatApple2 = _interopRequireDefault(_eatApple);
+	
+	var _setPoop = __webpack_require__(/*! ./setPoop */ 356);
+	
+	var _setPoop2 = _interopRequireDefault(_setPoop);
+	
+	var _initState = __webpack_require__(/*! ./initState */ 366);
+	
+	var _initState2 = _interopRequireDefault(_initState);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.setApple = _setApple2.default;
+	exports.eatApple = _eatApple2.default;
+	exports.setPoop = _setPoop2.default;
+	exports.initState = _initState2.default;
+
+/***/ },
+/* 353 */
+/*!**********************************!*\
+  !*** ./src/commands/setApple.js ***!
+  \**********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _rstore = __webpack_require__(/*! rstore */ 347);
+	
+	var _state = __webpack_require__(/*! ../state */ 346);
+	
+	var _state2 = _interopRequireDefault(_state);
+	
+	var _util = __webpack_require__(/*! ../util */ 354);
+	
+	var _util2 = _interopRequireDefault(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var appleL = (0, _rstore.lens)('apple');
+	var setAppleEvent = _state2.default.eventCreatorFactory(appleL.set);
+	var setAppleCommand = _state2.default.commandCreatorFactory(function (snake) {
+	  return setAppleEvent(_util2.default.generateApple(snake));
+	});
+	
+	exports.default = setAppleCommand;
+
+/***/ },
+/* 354 */
 /*!*********************!*\
   !*** ./src/util.js ***!
   \*********************/
@@ -19544,191 +19733,6 @@
 	exports.default = Utils;
 
 /***/ },
-/* 349 */
-/*!*******************************!*\
-  !*** ./src/reducers/index.js ***!
-  \*******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.refresh = exports.direction = undefined;
-	
-	var _direction = __webpack_require__(/*! ./direction */ 350);
-	
-	var _direction2 = _interopRequireDefault(_direction);
-	
-	var _refresh = __webpack_require__(/*! ./refresh */ 351);
-	
-	var _refresh2 = _interopRequireDefault(_refresh);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	exports.direction = _direction2.default;
-	exports.refresh = _refresh2.default;
-
-/***/ },
-/* 350 */
-/*!***********************************!*\
-  !*** ./src/reducers/direction.js ***!
-  \***********************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var directionReducer = function directionReducer(state, action) {
-	    return Object.assign({}, state, { direction: action.direction });
-	};
-	
-	exports.default = directionReducer;
-
-/***/ },
-/* 351 */
-/*!*********************************!*\
-  !*** ./src/reducers/refresh.js ***!
-  \*********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-	
-	var _util = __webpack_require__(/*! ../util */ 348);
-	
-	var _util2 = _interopRequireDefault(_util);
-	
-	var _globals = __webpack_require__(/*! ../globals */ 352);
-	
-	var _globals2 = _interopRequireDefault(_globals);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var refreshReducer = function refreshReducer(state, action) {
-	    var newSnake = state.snake.slice(0),
-	        head = newSnake[0].slice(0);
-	
-	    newSnake.unshift(shiftCell(head, state.direction));
-	    newSnake.pop();
-	
-	    return Object.assign({}, state, { snake: newSnake });
-	};
-	
-	var shiftCell = function shiftCell(_ref, _ref2) {
-	    var _ref4 = _slicedToArray(_ref, 2);
-	
-	    var cx = _ref4[0];
-	    var cy = _ref4[1];
-	
-	    var _ref3 = _slicedToArray(_ref2, 2);
-	
-	    var dx = _ref3[0];
-	    var dy = _ref3[1];
-	    return [shift(cx, dx), shift(cy, dy)];
-	};
-	var shift = function shift(c, d) {
-	    return Math.abs((_globals2.default.FIELD_SIZE + c + d) % _globals2.default.FIELD_SIZE);
-	};
-	
-	exports.default = refreshReducer;
-
-/***/ },
-/* 352 */
-/*!************************!*\
-  !*** ./src/globals.js ***!
-  \************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var GLOBALS = {
-	    FIELD_SIZE: 30,
-	    CELL_SIZE: 15,
-	    INITIAL_LENGTH: 3,
-	    INITIAL_SPEED: 500,
-	    SPEED_STEP: 10
-	};
-	
-	exports.default = GLOBALS;
-
-/***/ },
-/* 353 */
-/*!*******************************!*\
-  !*** ./src/commands/index.js ***!
-  \*******************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.setPoop = exports.eatApple = exports.setApple = undefined;
-	
-	var _setApple = __webpack_require__(/*! ./setApple */ 354);
-	
-	var _setApple2 = _interopRequireDefault(_setApple);
-	
-	var _eatApple = __webpack_require__(/*! ./eatApple */ 355);
-	
-	var _eatApple2 = _interopRequireDefault(_eatApple);
-	
-	var _setPoop = __webpack_require__(/*! ./setPoop */ 356);
-	
-	var _setPoop2 = _interopRequireDefault(_setPoop);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	exports.setApple = _setApple2.default;
-	exports.eatApple = _eatApple2.default;
-	exports.setPoop = _setPoop2.default;
-
-/***/ },
-/* 354 */
-/*!**********************************!*\
-  !*** ./src/commands/setApple.js ***!
-  \**********************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _state = __webpack_require__(/*! ../state */ 346);
-	
-	var _state2 = _interopRequireDefault(_state);
-	
-	var _util = __webpack_require__(/*! ../util */ 348);
-	
-	var _util2 = _interopRequireDefault(_util);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var setApple = function setApple(s, u) {
-	  return Object.assign({}, s, { apple: u });
-	};
-	var setAppleEvent = _state2.default.eventCreatorFactory(setApple);
-	var setAppleCommand = _state2.default.commandCreatorFactory(function (snake) {
-	  return setAppleEvent(_util2.default.generateApple(snake));
-	});
-	
-	exports.default = setAppleCommand;
-
-/***/ },
 /* 355 */
 /*!**********************************!*\
   !*** ./src/commands/eatApple.js ***!
@@ -19741,20 +19745,20 @@
 	    value: true
 	});
 	
+	var _rstore = __webpack_require__(/*! rstore */ 347);
+	
 	var _state = __webpack_require__(/*! ../state */ 346);
 	
 	var _state2 = _interopRequireDefault(_state);
 	
-	var _util = __webpack_require__(/*! ../util */ 348);
+	var _util = __webpack_require__(/*! ../util */ 354);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var eatApple = function eatApple(s, u) {
-	    return Object.assign({}, s, { snake: u });
-	};
-	var eatAppleEvent = _state2.default.eventCreatorFactory(eatApple);
+	var snakeL = (0, _rstore.lens)('snake');
+	var eatAppleEvent = _state2.default.eventCreatorFactory(snakeL.set);
 	var eatAppleCommand = _state2.default.commandCreatorFactory(function (snake, apple) {
 	    snake.push(apple);
 	    eatAppleEvent(snake);
@@ -19775,21 +19779,19 @@
 	  value: true
 	});
 	
-	var _state = __webpack_require__(/*! ../state */ 346);
+	var _rstore = __webpack_require__(/*! rstore */ 347);
 	
-	var _state2 = _interopRequireDefault(_state);
+	var _stk = __webpack_require__(/*! stk */ 357);
 	
-	var _util = __webpack_require__(/*! ../util */ 348);
+	var _util = __webpack_require__(/*! ../util */ 354);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var setPoop = function setPoop(s, u) {
-	  return Object.assign({}, s, { poop: u });
-	};
-	var setPoopEvent = _state2.default.eventCreatorFactory(setPoop);
-	var setPoopCommand = _state2.default.commandCreatorFactory(function (snake) {
+	var poopL = (0, _rstore.lens)('poop');
+	var setPoopEvent = (0, _stk.eventCreatorFactory)(poopL.set);
+	var setPoopCommand = (0, _stk.commandCreatorFactory)(function (snake) {
 	  return setPoopEvent(snake.slice(-2, -1)[0]);
 	});
 	
@@ -19797,6 +19799,416 @@
 
 /***/ },
 /* 357 */
+/*!****************************!*\
+  !*** ./~/stk/src/index.js ***!
+  \****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by ndyumin on 09.09.2016.
+	 */
+	
+	const {
+	    store,
+	    eventCreatorFactory,
+	    commandCreatorFactory,
+	    defaultProjection
+	} = __webpack_require__(/*! ./store */ 358);
+	const addStore = __webpack_require__(/*! ./devtools */ 365);
+	const flushStrategies = __webpack_require__(/*! ./flushStrategies */ 361);
+	
+	module.exports = {
+	    store,
+	    eventCreatorFactory,
+	    commandCreatorFactory,
+	    defaultProjection,
+	    devtools: {
+	        addStore
+	    },
+	    flushStrategies
+	};
+
+/***/ },
+/* 358 */
+/*!****************************!*\
+  !*** ./~/stk/src/store.js ***!
+  \****************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Created by ndyumin on 15.09.2016.
+	 */
+	
+	const {removeItem} = __webpack_require__(/*! ./arrays */ 359);
+	const {fromCallbacks, notifyAll} = __webpack_require__(/*! ./observers */ 360);
+	const {count100kFlushStrategy} = __webpack_require__(/*! ./flushStrategies */ 361);
+	const symbolObservable = __webpack_require__(/*! symbol-observable */ 362);
+	
+	function defaultProjection(events, initial) {
+	    return events.reduce(function (state, event) {
+	        return event.reduce(state, event.update);
+	    }, initial);
+	}
+	
+	const eventCreatorFactory = reduce => update => ({
+	    reduce,
+	    update
+	});
+	
+	const commandCreatorFactory = executor => executor;
+	
+	function store(initial, flushStrategy = count100kFlushStrategy) {
+	    let events = [];
+	    let replicas = [];
+	
+	    const flush = flushStrategy(defaultProjection);
+	    return {
+	        [symbolObservable]: function () {
+	            return this;
+	        },
+	        _eventLog (observer) {
+	            if (typeof observer === 'function') {
+	                observer = fromCallbacks(...arguments);
+	            }
+	            replicas.push(observer);
+	
+	            return {
+	                unsubscribe() {
+	                    replicas = removeItem(replicas, observer);
+	                }
+	            };
+	        },
+	        subscribe(observer) {
+	            if (typeof observer === 'function') {
+	                observer = fromCallbacks(...arguments);
+	            }
+	
+	            return this.view(defaultProjection).subscribe(observer);
+	        },
+	        plug(observable, reducer) {
+	            const event = this.eventCreatorFactory(reducer);
+	            return observable.subscribe({
+	                next: event
+	            });
+	        },
+	        view(projectFn, viewInitial = initial) {
+	            let viewObservers = [];
+	            const onEvent = this._eventLog;
+	            const flush = flushStrategy(projectFn);
+	            return {
+	                subscribe (observer) {
+	                    if (typeof observer === 'function') {
+	                        observer = fromCallbacks(...arguments);
+	                    }
+	                    viewObservers.push(observer);
+	                    const projectAndNotify = () =>
+	                        observer.next(projectFn(events, viewInitial));
+	
+	                    projectAndNotify();
+	
+	                    const subscription = onEvent(() => {
+	                        projectAndNotify();
+	                        [, viewInitial] = flush(events, viewInitial);
+	                    });
+	
+	                    return {
+	                        unsubscribe() {
+	                            subscription.unsubscribe();
+	                            viewObservers = removeItem(viewObservers, observer);
+	                        }
+	                    };
+	                }
+	            }
+	        },
+	        transaction() {
+	            const _branchRev = events.length;
+	            const _altEvents = [];
+	            const branch = store(initial);
+	            const subs = this._eventLog(branch.dispatch);
+	            const bSubs = branch._eventLog(ev => _altEvents.push(ev));
+	            return {
+	                store: () => branch,
+	                dispatch: branch.dispatch,
+	                commit: () => {
+	                    subs.unsubscribe();
+	                    bSubs.unsubscribe();
+	                    events = events.slice(0, _branchRev).concat(_altEvents);
+	                    _altEvents.length = 0;
+	                    notifyAll(replicas, eventCreatorFactory(s=>s)())
+	                },
+	                cancel: () => {
+	                    subs.unsubscribe();
+	                    bSubs.unsubscribe();
+	                    _altEvents.length = 0;
+	                }
+	            };
+	        },
+	        dispatch(event) {
+	            events.push(event);
+	            notifyAll(replicas, event);
+	            [events, initial] = flush(events, initial);
+	        },
+	        commandCreatorFactory,
+	        eventCreatorFactory(reduce) {
+	            return update =>
+	                this.dispatch({
+	                    reduce,
+	                    update
+	                });
+	        }
+	    };
+	}
+	
+	module.exports = {
+	    store,
+	    eventCreatorFactory,
+	    commandCreatorFactory,
+	    defaultProjection
+	};
+
+/***/ },
+/* 359 */
+/*!*****************************!*\
+  !*** ./~/stk/src/arrays.js ***!
+  \*****************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Created by ndyumin on 15.09.2016.
+	 */
+	function extract(arr, obj) {
+	    return arr.filter(item => Object.keys(obj).every(key => item[key] === obj[key]));
+	}
+	
+	function removeItem(arr, item) {
+	    const result = arr.slice(0);
+	    const index = result.indexOf(item);
+	    result.splice(index, 1);
+	    return result;
+	}
+	
+	module.exports = {
+	    extract,
+	    removeItem
+	};
+
+/***/ },
+/* 360 */
+/*!********************************!*\
+  !*** ./~/stk/src/observers.js ***!
+  \********************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Created by ndyumin on 15.09.2016.
+	 */
+	function notifyAll(observers, state) {
+	    observers.forEach(o => o.next(state));
+	}
+	
+	function fromCallbacks(next, error, complete) {
+	    return {
+	        next,
+	        error,
+	        complete
+	    };
+	}
+	
+	module.exports = {
+	    notifyAll,
+	    fromCallbacks
+	};
+
+/***/ },
+/* 361 */
+/*!**************************************!*\
+  !*** ./~/stk/src/flushStrategies.js ***!
+  \**************************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Created by ndyumin on 04.10.2016.
+	 */
+	
+	function immediateFlushStrategy(project) {
+	    return function (events, initial) {
+	        const projection = project(events, initial);
+	        return [[], projection];
+	    }
+	}
+	
+	function neverFlushStrategy(project) {
+	    return function (events, initial) {
+	        return [events, initial];
+	    }
+	}
+	
+	function count100kFlushStrategy(project) {
+	    return function (events, initial) {
+	        return events.length >= 100000
+	            ? [[], project(events, initial)]
+	            : [events, initial];
+	    };
+	}
+	
+	module.exports = {
+	    count100kFlushStrategy,
+	    neverFlushStrategy,
+	    immediateFlushStrategy
+	};
+
+/***/ },
+/* 362 */
+/*!**************************************!*\
+  !*** ./~/symbol-observable/index.js ***!
+  \**************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(/*! ./lib/index */ 363);
+
+
+/***/ },
+/* 363 */
+/*!******************************************!*\
+  !*** ./~/symbol-observable/lib/index.js ***!
+  \******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _ponyfill = __webpack_require__(/*! ./ponyfill */ 364);
+	
+	var _ponyfill2 = _interopRequireDefault(_ponyfill);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var root = undefined; /* global window */
+	
+	if (typeof global !== 'undefined') {
+		root = global;
+	} else if (typeof window !== 'undefined') {
+		root = window;
+	}
+	
+	var result = (0, _ponyfill2['default'])(root);
+	exports['default'] = result;
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
+
+/***/ },
+/* 364 */
+/*!*********************************************!*\
+  !*** ./~/symbol-observable/lib/ponyfill.js ***!
+  \*********************************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports['default'] = symbolObservablePonyfill;
+	function symbolObservablePonyfill(root) {
+		var result;
+		var _Symbol = root.Symbol;
+	
+		if (typeof _Symbol === 'function') {
+			if (_Symbol.observable) {
+				result = _Symbol.observable;
+			} else {
+				result = _Symbol('observable');
+				_Symbol.observable = result;
+			}
+		} else {
+			result = '@@observable';
+		}
+	
+		return result;
+	};
+
+/***/ },
+/* 365 */
+/*!*******************************!*\
+  !*** ./~/stk/src/devtools.js ***!
+  \*******************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Created by ndyumin on 02.10.2016.
+	 */
+	
+	
+	module.exports = function addStore(_store, initial) {
+	    const resetEvent = _store.eventCreatorFactory((s, u) => u.state);
+	    const devtool = window.devToolsExtension(function(s, u) {
+	        return u.type === '@@INIT' ? initial : u.reduce(s, u.update);
+	    });
+	
+	    devtool.subscribe(()=> resetEvent({
+	        _type: '@@RESET',
+	        state: devtool.getState()
+	    }));
+	
+	    _store._eventLog(ev => {
+	        if (ev.update && ev.update._type !== '@@RESET') {
+	            devtool.dispatch(Object.assign(ev, {type: ev.reduce.name}))
+	        }
+	    });
+	
+	    return devtool;
+	};
+
+
+/***/ },
+/* 366 */
+/*!***********************************!*\
+  !*** ./src/commands/initState.js ***!
+  \***********************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _rstore = __webpack_require__(/*! rstore */ 347);
+	
+	var _state = __webpack_require__(/*! ../state */ 346);
+	
+	var _state2 = _interopRequireDefault(_state);
+	
+	var _util = __webpack_require__(/*! ../util */ 354);
+	
+	var _util2 = _interopRequireDefault(_util);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var appleL = (0, _rstore.lens)('apple');
+	var snakeL = (0, _rstore.lens)('snake');
+	var directionL = (0, _rstore.lens)('direction');
+	
+	var setAppleEvent = _state2.default.eventCreatorFactory(appleL.set);
+	var setSnakeEvent = _state2.default.eventCreatorFactory(snakeL.set);
+	var setDirectionEvent = _state2.default.eventCreatorFactory(directionL.set);
+	
+	var initStateCommand = _state2.default.commandCreatorFactory(function () {
+	    var initialDirection = _util2.default.randomDirection(),
+	        initialSnake = _util2.default.initSnake(initialDirection),
+	        initialApple = _util2.default.generateApple(initialSnake);
+	
+	    setDirectionEvent(initialDirection);
+	    setSnakeEvent(initialSnake);
+	    setAppleEvent(initialApple);
+	});
+	
+	exports.default = initStateCommand;
+
+/***/ },
+/* 367 */
 /*!*************************!*\
   !*** ./src/keyboard.js ***!
   \*************************/
@@ -19837,7 +20249,7 @@
 	exports.KEYS = KEYS;
 
 /***/ },
-/* 358 */
+/* 368 */
 /*!*************************!*\
   !*** ./src/graphics.js ***!
   \*************************/
@@ -19853,7 +20265,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _globals = __webpack_require__(/*! ./globals */ 352);
+	var _globals = __webpack_require__(/*! ./globals */ 351);
 	
 	var _globals2 = _interopRequireDefault(_globals);
 	
@@ -19869,16 +20281,10 @@
 	    _createClass(CanvasGraphics, [{
 	        key: 'redraw',
 	        value: function redraw(_ref) {
-	            var _this = this;
-	
 	            var snake = _ref.snake;
 	            var apple = _ref.apple;
-	            var poops = _ref.poops;
-	            ;
+	
 	            this.clear();
-	            poops.forEach(function (poop) {
-	                return _this.drawPoop(poop);
-	            });
 	            this.drawApple(apple);
 	            this.drawSnake(snake);
 	        }

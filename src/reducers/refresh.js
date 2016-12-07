@@ -1,4 +1,3 @@
-import _ from '../util';
 import GLOBALS from '../globals';
 
 const refreshReducer = (state, action) => {
