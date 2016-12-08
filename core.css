@@ -33,6 +33,11 @@ body {
     text-transform: uppercase;
 }
 
+.btn:disabled {
+    border: 2px solid #556678;
+    color: #556678;
+}
+
 .btn:active {
     color: #556678;
 }

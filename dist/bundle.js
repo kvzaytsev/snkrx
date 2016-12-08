@@ -85,12 +85,9 @@
 	
 	var lengthSpan = document.querySelector('span.length');
 	var levelSpan = document.querySelector('span.level');
+	var restartBtn = document.querySelector('.btn-restart');
 	
 	var graphics = new _graphics2.default();
-	
-	commands.initState();
-	graphics.drawGrid();
-	
 	var dieSubject = new _rxjs2.default.Subject();
 	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals2.default.INITIAL_SPEED);
 	var keyDownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
@@ -98,13 +95,7 @@
 	var keys$ = keyDownObservable.map(function (e) {
 	    return e.which;
 	});
-	
-	restartObservable.subscribe(function () {
-	    levelSpan.innerHTML = String(1);
-	    commands.initState();
-	    plugStreams();
-	    speedSubject.next(_globals2.default.INITIAL_SPEED);
-	});
+	var store$ = _state2.default.toRx(_rxjs2.default);
 	
 	var pause$ = keys$.filter(function (code) {
 	    return code === _keyboard.KEYS.SPACE;
@@ -116,55 +107,87 @@
 	    return { direction: (0, _keyboard.getDirection)(code) };
 	});
 	
-	var moving$ = _rxjs2.default.Observable.merge(speedSubject, direction$);
-	
-	var refresh$ = speedSubject.combineLatest(moving$, function (speed) {
-	    return speed;
-	}).switchMap(function (speed) {
-	    return _rxjs2.default.Observable.timer(0, speed);
-	}).withLatestFrom(pause$, function (smth, paused) {
-	    return paused;
-	}).filter(function (p) {
-	    return p;
-	});
-	// .takeUntil(dieSubject);
-	
+	restartBtn.setAttribute('disabled', 'disabled');
+	commands.initState();
+	graphics.drawGrid();
 	_state2.default.plug(direction$, reducers.direction);
-	
-	var plugRefreshStreams = function plugRefreshStreams(rStream) {
-	    _state2.default.plug(rStream, reducers.refresh);
-	};
-	
-	plugRefreshStreams(refresh$);
 	_state2.default.subscribe(function (state) {
 	    return graphics.redraw(state);
 	});
 	
-	var store$ = _state2.default.toRx(_rxjs2.default);
-	var cycle$ = store$.sample(refresh$, function (state) {
-	    return state;
+	var moving$ = _rxjs2.default.Observable.merge(speedSubject, direction$);
+	
+	var createRefreshStresm = function createRefreshStresm() {
+	    return Promise.resolve(speedSubject.combineLatest(moving$, function (speed) {
+	        return speed;
+	    }).switchMap(function (speed) {
+	        return _rxjs2.default.Observable.timer(0, speed);
+	    }).withLatestFrom(pause$, function (smth, paused) {
+	        return paused;
+	    }).filter(function (p) {
+	        return p;
+	    }).takeUntil(dieSubject));
+	};
+	
+	var plugRefreshStream = function plugRefreshStream(rStream) {
+	    _state2.default.plug(rStream, reducers.refresh);
+	    return rStream;
+	};
+	
+	var createAndPlugRefresh = function createAndPlugRefresh() {
+	    createRefreshStresm().then(plugRefreshStream).then(function (rStream) {
+	        return store$.sample(rStream, function (state) {
+	            return state;
+	        });
+	    }).then(function (cycle$) {
+	        cycle$.subscribe(function (state) {
+	            var snake = state.snake.slice(0),
+	                head = snake[0].slice(0),
+	                anApple = state.apple.slice(0);
+	
+	            if (_util2.default.cellsEqual(head, anApple)) {
+	                commands.eatApple(snake, anApple);
+	                commands.setApple(snake);
+	            } else if (_util2.default.checkSelfEating(snake)) {
+	                dieSubject.next({
+	                    TYPE: 'GAME_OVER',
+	                    message: "Self Eating"
+	                });
+	            }
+	        });
+	    });
+	};
+	
+	restartObservable.subscribe(function () {
+	    dieSubject.next({
+	        TYPE: 'RESET',
+	        message: "Restarting"
+	    });
+	    levelSpan.innerHTML = String(1);
+	    commands.initState();
+	    speedSubject.next(_globals2.default.INITIAL_SPEED);
+	
+	    createAndPlugRefresh();
 	});
 	
-	cycle$.subscribe(function (state) {
-	    var snake = state.snake.slice(0),
-	        head = snake[0].slice(0),
-	        anApple = state.apple.slice(0);
-	
-	    if (_util2.default.cellsEqual(head, anApple)) {
-	        commands.eatApple(snake, anApple);
-	        commands.setApple(snake);
-	    } else if (_util2.default.checkSelfEating(snake)) {
-	        dieSubject.next("Self Eating!!!");
-	    }
-	});
+	createAndPlugRefresh();
 	
 	var snakeLength$ = store$.map(function (_ref) {
 	    var snake = _ref.snake;
 	    return snake.length;
 	}).distinctUntilChanged();
 	
-	dieSubject.subscribe(function (message) {
-	    console.log(message);
+	dieSubject.subscribe(function (cause) {
+	    switch (cause.TYPE) {
+	        case 'GAME_OVER':
+	            restartBtn.removeAttribute('disabled');
+	            break;
+	        default:
+	            restartBtn.setAttribute('disabled', 'disabled');
+	            break;
+	    }
+	
+	    console.log(cause.message);
 	});
 	
 	snakeLength$.subscribe(function (len) {
@@ -20362,6 +20385,9 @@
 	            //this.drawCell(segment, "#445C72", "#95ACC3");
 	            this.drawCell(segment, "#425C73", "#95ACC3");
 	        }
+	    }, {
+	        key: 'drawGameOver',
+	        value: function drawGameOver() {}
 	    }, {
 	        key: 'clear',
 	        value: function clear() {

@@ -10,24 +10,15 @@ import GLOBALS from './globals';
 
 const lengthSpan = document.querySelector('span.length');
 const levelSpan = document.querySelector('span.level');
+const restartBtn = document.querySelector('.btn-restart');
 
 const graphics = new CanvasGraphics();
-
-commands.initState();
-graphics.drawGrid();
-
 const dieSubject = new Rx.Subject();
 const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
 const keyDownObservable = Rx.Observable.fromEvent(document, 'keydown');
 const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
 const keys$ = keyDownObservable.map (e => e.which);
-
-restartObservable.subscribe(() => {
-    levelSpan.innerHTML = String(1);
-    commands.initState();
-    plugStreams();
-    speedSubject.next(GLOBALS.INITIAL_SPEED);
-});
+const store$ = rxStore.toRx(Rx);
 
 const pause$ = keys$
         .filter(code => code === KEYS.SPACE)
@@ -37,47 +28,82 @@ const direction$ = keys$
         .filter(isDirectionKey)
         .map(code => ({direction: getDirection(code)}));
 
-const moving$ =  Rx.Observable.merge(speedSubject, direction$);
+restartBtn.setAttribute('disabled', 'disabled');
+commands.initState();
+graphics.drawGrid();
+rxStore.plug(direction$, reducers.direction);
+rxStore.subscribe(state => graphics.redraw(state));
 
-const refresh$ =
+const moving$ = Rx.Observable.merge(speedSubject, direction$);
+
+const createRefreshStresm = () => {
+    return Promise.resolve(
         speedSubject
             .combineLatest(moving$, speed => speed)
             .switchMap(speed => Rx.Observable.timer(0, speed))
             .withLatestFrom(pause$, (smth, paused) => paused)
-            .filter(p => p);
-            // .takeUntil(dieSubject);
+            .filter(p => p)
+            .takeUntil(dieSubject)
+        );
+}
 
-rxStore.plug(direction$, reducers.direction);
-
-const plugRefreshStreams = (rStream) => {
+const plugRefreshStream = (rStream) => {
     rxStore.plug(rStream, reducers.refresh);
+    return rStream;
 };
 
-plugRefreshStreams(refresh$);
-rxStore.subscribe(state => graphics.redraw(state));
+const createAndPlugRefresh = () => {
+    createRefreshStresm()
+        .then(plugRefreshStream)
+        .then(rStream => store$.sample(rStream, state => state))
+        .then(cycle$ => {
+            cycle$.subscribe(state => {
+                let snake = state.snake.slice(0),
+                    head = snake[0].slice(0),
+                    anApple = state.apple.slice(0);
 
-const store$ = rxStore.toRx(Rx);
-const cycle$ = store$.sample(refresh$, state => state);
+                if (_.cellsEqual(head, anApple)) {
+                    commands.eatApple(snake, anApple);
+                    commands.setApple(snake);
+                } else if (_.checkSelfEating(snake)) {
+                    dieSubject.next({
+                        TYPE: 'GAME_OVER',
+                        message: "Self Eating"
+                    });
+                }
+            });
+        });
+};
 
-cycle$.subscribe(state => {
-    let snake = state.snake.slice(0),
-        head = snake[0].slice(0),
-        anApple = state.apple.slice(0);
+restartObservable.subscribe(() => {
+    dieSubject.next({
+        TYPE: 'RESET',
+        message: "Restarting"
+    });
+    levelSpan.innerHTML = String(1);
+    commands.initState();
+    speedSubject.next(GLOBALS.INITIAL_SPEED);
 
-    if (_.cellsEqual(head, anApple)) {
-        commands.eatApple(snake, anApple);
-        commands.setApple(snake);
-    } else if (_.checkSelfEating(snake)) {
-        dieSubject.next("Self Eating!!!");
-    }
+    createAndPlugRefresh();
 });
+
+createAndPlugRefresh();
 
 const snakeLength$ = store$
     .map(({snake}) => snake.length)
     .distinctUntilChanged();
 
-dieSubject.subscribe(message => {
-    console.log(message);
+dieSubject.subscribe(cause => {
+    switch (cause.TYPE) {
+        case 'GAME_OVER':
+            restartBtn.removeAttribute('disabled');
+            break;
+        default:
+            restartBtn.setAttribute('disabled', 'disabled');
+            break;
+    }
+
+    console.log(cause.message);
 });
 
 snakeLength$.subscribe(len => {

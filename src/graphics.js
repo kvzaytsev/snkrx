@@ -14,7 +14,7 @@ class CanvasGraphics {
     drawGrid () {
         let size = Globals.FIELD_SIZE * Globals.CELL_SIZE,
             canvas = `<canvas id="sCanvas" class="snake-canvas" width="${size}" height="${size}"></canvas>`;
-        
+
         document.getElementById('playing-layer').innerHTML = canvas;
         this.canvas = document.getElementById("sCanvas");
         this.ctx = this.canvas.getContext("2d");
@@ -50,6 +50,10 @@ class CanvasGraphics {
     drawSegment(segment) {
         //this.drawCell(segment, "#445C72", "#95ACC3");
         this.drawCell(segment, "#425C73", "#95ACC3");
+    }
+
+    drawGameOver() {
+        
     }
 
     clear() {
