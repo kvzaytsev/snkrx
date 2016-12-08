@@ -22,7 +22,6 @@ const keyDownObservable = Rx.Observable.fromEvent(document, 'keydown');
 const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
 const keys$ = keyDownObservable.map (e => e.which);
 
-
 restartObservable.subscribe(() => {
     levelSpan.innerHTML = String(1);
     commands.initState();
@@ -39,42 +38,39 @@ const direction$ = keys$
         .map(code => ({direction: getDirection(code)}));
 
 const moving$ =  Rx.Observable.merge(speedSubject, direction$);
+
 const refresh$ =
         speedSubject
             .combineLatest(moving$, speed => speed)
             .switchMap(speed => Rx.Observable.timer(0, speed))
             .withLatestFrom(pause$, (smth, paused) => paused)
-            .filter(p => p)
-            .takeUntil(dieSubject);
+            .filter(p => p);
+            // .takeUntil(dieSubject);
 
-const plugStreams = () => {
-    rxStore
-        .plug(
-            direction$, reducers.direction,
-            refresh$, reducers.refresh
-        );
+rxStore.plug(direction$, reducers.direction);
 
+const plugRefreshStreams = (rStream) => {
+    rxStore.plug(rStream, reducers.refresh);
 };
 
-plugStreams();
+plugRefreshStreams(refresh$);
 rxStore.subscribe(state => graphics.redraw(state));
 
 const store$ = rxStore.toRx(Rx);
+const cycle$ = store$.sample(refresh$, state => state);
 
-store$
-    .sample(refresh$, state => state)
-    .subscribe(state => {
-        let snake = state.snake.slice(0),
-            head = snake[0].slice(0),
-            anApple = state.apple.slice(0);
+cycle$.subscribe(state => {
+    let snake = state.snake.slice(0),
+        head = snake[0].slice(0),
+        anApple = state.apple.slice(0);
 
-        if (_.cellsEqual(head, anApple)) {
-            commands.eatApple(snake, anApple);
-            commands.setApple(snake);
-        } else if (_.checkSelfEating(snake)) {
-            dieSubject.next("Self Eating!!!");
-        }
-    });
+    if (_.cellsEqual(head, anApple)) {
+        commands.eatApple(snake, anApple);
+        commands.setApple(snake);
+    } else if (_.checkSelfEating(snake)) {
+        dieSubject.next("Self Eating!!!");
+    }
+});
 
 const snakeLength$ = store$
     .map(({snake}) => snake.length)

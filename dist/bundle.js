@@ -117,6 +117,7 @@
 	});
 	
 	var moving$ = _rxjs2.default.Observable.merge(speedSubject, direction$);
+	
 	var refresh$ = speedSubject.combineLatest(moving$, function (speed) {
 	    return speed;
 	}).switchMap(function (speed) {
@@ -125,22 +126,26 @@
 	    return paused;
 	}).filter(function (p) {
 	    return p;
-	}).takeUntil(dieSubject);
+	});
+	// .takeUntil(dieSubject);
 	
-	var plugStreams = function plugStreams() {
-	    _state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh);
+	_state2.default.plug(direction$, reducers.direction);
+	
+	var plugRefreshStreams = function plugRefreshStreams(rStream) {
+	    _state2.default.plug(rStream, reducers.refresh);
 	};
 	
-	plugStreams();
+	plugRefreshStreams(refresh$);
 	_state2.default.subscribe(function (state) {
 	    return graphics.redraw(state);
 	});
 	
 	var store$ = _state2.default.toRx(_rxjs2.default);
-	
-	store$.sample(refresh$, function (state) {
+	var cycle$ = store$.sample(refresh$, function (state) {
 	    return state;
-	}).subscribe(function (state) {
+	});
+	
+	cycle$.subscribe(function (state) {
 	    var snake = state.snake.slice(0),
 	        head = snake[0].slice(0),
 	        anApple = state.apple.slice(0);
@@ -19641,7 +19646,7 @@
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	
 	var _rstore = __webpack_require__(/*! rstore */ 347);
@@ -19659,7 +19664,7 @@
 	var appleL = (0, _rstore.lens)('apple');
 	var setAppleEvent = _state2.default.eventCreatorFactory(appleL.set);
 	var setAppleCommand = _state2.default.commandCreatorFactory(function (snake) {
-	  return setAppleEvent(_util2.default.generateApple(snake));
+	    return setAppleEvent(_util2.default.generateApple(snake.slice(0)));
 	});
 	
 	exports.default = setAppleCommand;

@@ -4,6 +4,8 @@ import _ from '../util';
 
 const appleL = lens('apple');
 const setAppleEvent = rxStore.eventCreatorFactory(appleL.set);
-const setAppleCommand = rxStore.commandCreatorFactory(snake => setAppleEvent(_.generateApple(snake)));
+const setAppleCommand = rxStore.commandCreatorFactory(
+    snake => setAppleEvent(_.generateApple(snake.slice(0)))
+);
 
 export default setAppleCommand;
