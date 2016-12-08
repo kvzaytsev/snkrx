@@ -8,18 +8,25 @@ import {getDirection, isDirectionKey, KEYS} from './keyboard';
 import CanvasGraphics from './graphics';
 import GLOBALS from './globals';
 
+const lengthSpan = document.querySelector('span.length');
+const levelSpan = document.querySelector('span.level');
+
 const graphics = new CanvasGraphics();
 
 commands.initState();
 graphics.drawGrid();
 
+const dieSubject = new Rx.Subject();
 const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
 const keyDownObservable = Rx.Observable.fromEvent(document, 'keydown');
 const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
 const keys$ = keyDownObservable.map (e => e.which);
 
+
 restartObservable.subscribe(() => {
+    levelSpan.innerHTML = String(1);
     commands.initState();
+    plugStreams();
     speedSubject.next(GLOBALS.INITIAL_SPEED);
 });
 
@@ -32,22 +39,27 @@ const direction$ = keys$
         .map(code => ({direction: getDirection(code)}));
 
 const moving$ =  Rx.Observable.merge(speedSubject, direction$);
-const refresh$ = 
+const refresh$ =
         speedSubject
             .combineLatest(moving$, speed => speed)
             .switchMap(speed => Rx.Observable.timer(0, speed))
             .withLatestFrom(pause$, (smth, paused) => paused)
-            .filter(p => p);
+            .filter(p => p)
+            .takeUntil(dieSubject);
 
-rxStore
-    .plug(
-        direction$, reducers.direction,
-        refresh$, reducers.refresh
-    )
-    .subscribe(state => graphics.redraw(state));
+const plugStreams = () => {
+    rxStore
+        .plug(
+            direction$, reducers.direction,
+            refresh$, reducers.refresh
+        );
+
+};
+
+plugStreams();
+rxStore.subscribe(state => graphics.redraw(state));
 
 const store$ = rxStore.toRx(Rx);
-
 
 store$
     .sample(refresh$, state => state)
@@ -60,24 +72,25 @@ store$
             commands.eatApple(snake, anApple);
             commands.setApple(snake);
         } else if (_.checkSelfEating(snake)) {
-         
-        } 
+            dieSubject.next("Self Eating!!!");
+        }
     });
 
 const snakeLength$ = store$
     .map(({snake}) => snake.length)
-    .distinct();
+    .distinctUntilChanged();
+
+dieSubject.subscribe(message => {
+    console.log(message);
+});
 
 snakeLength$.subscribe(len => {
-   document.querySelector('span.length').innerHTML = String(len);
+    lengthSpan.innerHTML = String(len);
 });
 
 snakeLength$
     .filter(len => len % 5 === 0)
     .subscribe(len => {
-        let levelSpan = document.querySelector('span.level'),
-            currentLevel = parseInt(levelSpan.innerHTML);
-
         speedSubject.next(GLOBALS.INITIAL_SPEED - len * GLOBALS.SPEED_STEP);
-        levelSpan.innerHTML = String(++currentLevel);
+        levelSpan.innerHTML = String(Math.floor(len/5)+1);
     });

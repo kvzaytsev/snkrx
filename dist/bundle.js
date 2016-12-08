@@ -83,11 +83,15 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	var lengthSpan = document.querySelector('span.length');
+	var levelSpan = document.querySelector('span.level');
+	
 	var graphics = new _graphics2.default();
 	
 	commands.initState();
 	graphics.drawGrid();
 	
+	var dieSubject = new _rxjs2.default.Subject();
 	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals2.default.INITIAL_SPEED);
 	var keyDownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
 	var restartObservable = _rxjs2.default.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
@@ -96,7 +100,9 @@
 	});
 	
 	restartObservable.subscribe(function () {
+	    levelSpan.innerHTML = String(1);
 	    commands.initState();
+	    plugStreams();
 	    speedSubject.next(_globals2.default.INITIAL_SPEED);
 	});
 	
@@ -119,9 +125,14 @@
 	    return paused;
 	}).filter(function (p) {
 	    return p;
-	});
+	}).takeUntil(dieSubject);
 	
-	_state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh).subscribe(function (state) {
+	var plugStreams = function plugStreams() {
+	    _state2.default.plug(direction$, reducers.direction, refresh$, reducers.refresh);
+	};
+	
+	plugStreams();
+	_state2.default.subscribe(function (state) {
 	    return graphics.redraw(state);
 	});
 	
@@ -137,26 +148,29 @@
 	    if (_util2.default.cellsEqual(head, anApple)) {
 	        commands.eatApple(snake, anApple);
 	        commands.setApple(snake);
-	    } else if (_util2.default.checkSelfEating(snake)) {}
+	    } else if (_util2.default.checkSelfEating(snake)) {
+	        dieSubject.next("Self Eating!!!");
+	    }
 	});
 	
 	var snakeLength$ = store$.map(function (_ref) {
 	    var snake = _ref.snake;
 	    return snake.length;
-	}).distinct();
+	}).distinctUntilChanged();
+	
+	dieSubject.subscribe(function (message) {
+	    console.log(message);
+	});
 	
 	snakeLength$.subscribe(function (len) {
-	    document.querySelector('span.length').innerHTML = String(len);
+	    lengthSpan.innerHTML = String(len);
 	});
 	
 	snakeLength$.filter(function (len) {
 	    return len % 5 === 0;
 	}).subscribe(function (len) {
-	    var levelSpan = document.querySelector('span.level'),
-	        currentLevel = parseInt(levelSpan.innerHTML);
-	
 	    speedSubject.next(_globals2.default.INITIAL_SPEED - len * _globals2.default.SPEED_STEP);
-	    levelSpan.innerHTML = String(++currentLevel);
+	    levelSpan.innerHTML = String(Math.floor(len / 5) + 1);
 	});
 
 /***/ },
