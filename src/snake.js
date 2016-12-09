@@ -29,14 +29,14 @@ const pause$ = keys$
 
 const direction$ = keys$
         .filter(isDirectionKey)
-        .map(code => ({direction: getDirection(code)}));
+        .map(code => getDirection(code));
 
 const directionL = lens('direction');
 
 restartBtn.setAttribute('disabled', 'disabled');
 commands.initState();
 graphics.drawGrid();
-rxStore.plug(direction$, reducers.direction);
+rxStore.plug(direction$, directionL.set);
 rxStore.subscribe(state => {
     _.checkOutOfBounds(state.snake)
         ? dieSubject.next({
