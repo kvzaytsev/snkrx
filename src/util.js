@@ -2,7 +2,7 @@ const FIELD_SIZE = 30;
 const INITIAL_SNAKE_SIZE = 3;
 
 const Utils = {
-    
+
     randomInt (min=4, max=FIELD_SIZE-5) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     },
@@ -51,6 +51,10 @@ const Utils = {
             [head] = copy.splice(0,1);
 
         return !!copy.find( segment => this.cellsEqual(head,segment));
+    },
+
+    checkOutOfBounds ([[x,y]]) {
+        return x < 0 || y < 0 || x > FIELD_SIZE-1 || y > FIELD_SIZE-1;
     }
 }
 

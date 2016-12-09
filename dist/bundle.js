@@ -53,6 +53,8 @@
 	
 	var _rxjs2 = _interopRequireDefault(_rxjs);
 	
+	var _rstore = __webpack_require__(/*! rstore */ 347);
+	
 	var _state = __webpack_require__(/*! ./state */ 346);
 	
 	var _state2 = _interopRequireDefault(_state);
@@ -109,12 +111,17 @@
 	    return { direction: (0, _keyboard.getDirection)(code) };
 	});
 	
+	var directionL = (0, _rstore.lens)('direction');
+	
 	restartBtn.setAttribute('disabled', 'disabled');
 	commands.initState();
 	graphics.drawGrid();
 	_state2.default.plug(direction$, reducers.direction);
 	_state2.default.subscribe(function (state) {
-	    return graphics.redraw(state);
+	    _util2.default.checkOutOfBounds(state.snake) ? dieSubject.next({
+	        TYPE: 'GAME_OVER',
+	        message: "Out Of Bounds"
+	    }) : graphics.redraw(state);
 	});
 	
 	var moving$ = _rxjs2.default.Observable.merge(speedSubject, direction$);
@@ -161,14 +168,13 @@
 	};
 	
 	restartObservable.subscribe(function () {
+	    commands.initState();
 	    dieSubject.next({
 	        TYPE: 'RESET',
 	        message: "Restarting"
 	    });
 	    levelSpan.innerHTML = String(1);
-	    commands.initState();
 	    speedSubject.next(_globals2.default.INITIAL_SPEED);
-	
 	    createAndPlugRefresh();
 	});
 	
@@ -19580,6 +19586,7 @@
 	    var newSnake = state.snake.slice(0),
 	        head = newSnake[0].slice(0);
 	
+	    console.log('refreshReducer');
 	    newSnake.unshift(shiftCell(head, state.direction));
 	    newSnake.pop();
 	
@@ -19599,7 +19606,7 @@
 	    return [shift(cx, dx), shift(cy, dy)];
 	};
 	var shift = function shift(c, d) {
-	    return Math.abs((_globals2.default.FIELD_SIZE + c + d) % _globals2.default.FIELD_SIZE);
+	    return c + d;
 	};
 	
 	exports.default = refreshReducer;
@@ -19773,6 +19780,16 @@
 	        return !!copy.find(function (segment) {
 	            return _this2.cellsEqual(head, segment);
 	        });
+	    },
+	    checkOutOfBounds: function checkOutOfBounds(_ref) {
+	        var _ref2 = _slicedToArray(_ref, 1);
+	
+	        var _ref2$ = _slicedToArray(_ref2[0], 2);
+	
+	        var x = _ref2$[0];
+	        var y = _ref2$[1];
+	
+	        return x < 0 || y < 0 || x > FIELD_SIZE - 1 || y > FIELD_SIZE - 1;
 	    }
 	};
 	

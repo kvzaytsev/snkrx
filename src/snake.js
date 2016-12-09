@@ -1,4 +1,5 @@
 import Rx from 'rxjs';
+import {lens}  from 'rstore';
 
 import rxStore from './state';
 import * as reducers from './reducers';
@@ -30,11 +31,20 @@ const direction$ = keys$
         .filter(isDirectionKey)
         .map(code => ({direction: getDirection(code)}));
 
+const directionL = lens('direction');
+
 restartBtn.setAttribute('disabled', 'disabled');
 commands.initState();
 graphics.drawGrid();
 rxStore.plug(direction$, reducers.direction);
-rxStore.subscribe(state => graphics.redraw(state));
+rxStore.subscribe(state => {
+    _.checkOutOfBounds(state.snake)
+        ? dieSubject.next({
+            TYPE: 'GAME_OVER',
+            message: "Out Of Bounds"
+        })
+        : graphics.redraw(state)
+});
 
 const moving$ = Rx.Observable.merge(speedSubject, direction$);
 
@@ -78,14 +88,13 @@ const createAndPlugRefresh = () => {
 };
 
 restartObservable.subscribe(() => {
+    commands.initState();
     dieSubject.next({
         TYPE: 'RESET',
         message: "Restarting"
     });
     levelSpan.innerHTML = String(1);
-    commands.initState();
     speedSubject.next(GLOBALS.INITIAL_SPEED);
-
     createAndPlugRefresh();
 });
 
