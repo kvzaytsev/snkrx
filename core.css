@@ -18,6 +18,37 @@ body {
     margin: 0 auto;
 }
 
+#playing-layer.gameover {
+    opacity: 0.3;
+}
+
+.playing-layer-wrapper {
+    position: relative;
+}
+
+.message-area {
+    position: absolute;
+    top:0;
+    left:0;
+}
+
+.game-massage {
+    fill: none;
+    fill-opacity: 1;
+    stroke: #A3B7C9;
+    stroke-width: 2px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 60px;
+    text-transform: uppercase;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    visibility: hidden;
+}
+
+.game-massage.shown {
+    visibility: visible;
+}
+
 #sCanvas {
     border: solid 2px #A3B7C9 /* #cccccc */;
     /*border-radius: 2px;*/
@@ -28,8 +59,8 @@ body {
     background: transparent;
     border: 2px solid #A3B7C9;
     color: #A3B7C9;
-    font-family: 'Roboto', sans-serif;
-    font-size: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
     text-transform: uppercase;
 }
 
@@ -63,8 +94,8 @@ body {
     justify-content: space-between;
     padding: 5px 15px;
     color: #A3B7C9;
-    font-family: 'Roboto', sans-serif;
-    font-size: 20px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
     text-transform: uppercase;
 }
 

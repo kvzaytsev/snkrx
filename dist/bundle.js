@@ -86,6 +86,8 @@
 	var lengthSpan = document.querySelector('span.length');
 	var levelSpan = document.querySelector('span.level');
 	var restartBtn = document.querySelector('.btn-restart');
+	var messageText = document.querySelector('text.game-massage');
+	var playingField = document.querySelector('#playing-layer');
 	
 	var graphics = new _graphics2.default();
 	var dieSubject = new _rxjs2.default.Subject();
@@ -181,13 +183,15 @@
 	    switch (cause.TYPE) {
 	        case 'GAME_OVER':
 	            restartBtn.removeAttribute('disabled');
+	            messageText.classList.add('shown');
+	            playingField.classList.add('gameover');
 	            break;
 	        default:
 	            restartBtn.setAttribute('disabled', 'disabled');
+	            messageText.classList.remove('shown');
+	            playingField.classList.remove('gameover');
 	            break;
 	    }
-	
-	    console.log(cause.message);
 	});
 	
 	snakeLength$.subscribe(function (len) {
@@ -20382,7 +20386,6 @@
 	    }, {
 	        key: 'drawSegment',
 	        value: function drawSegment(segment) {
-	            //this.drawCell(segment, "#445C72", "#95ACC3");
 	            this.drawCell(segment, "#425C73", "#95ACC3");
 	        }
 	    }, {

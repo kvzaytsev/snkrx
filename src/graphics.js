@@ -48,12 +48,11 @@ class CanvasGraphics {
     }
 
     drawSegment(segment) {
-        //this.drawCell(segment, "#445C72", "#95ACC3");
         this.drawCell(segment, "#425C73", "#95ACC3");
     }
 
     drawGameOver() {
-        
+
     }
 
     clear() {

@@ -1,6 +1,7 @@
 <html>
     <head>
         <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Orbitron:400,500,700,900" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="core.css"/>
     </head>
     <body>
@@ -14,10 +15,21 @@
                             <span class="length">3</span>
                         </div>
                     </div>
-                    <div id="playing-layer"></div>
+                    <div class="playing-layer-wrapper">
+                        <div id="playing-layer"></div>
+                        <svg class="message-area" viewbox="0 0 450 450">
+                            <text
+                                x = "50%"
+                                y = "50%"
+                                class = "game-massage"
+                                >
+                                Game Over
+                            </text>
+                        </svg>
+                    </div>
                 </div>
                 <script src="./dist/bundle.js"></script>
-            </div>  
-        </div>  
+            </div>
+        </div>
     </body>
 </html>

@@ -11,6 +11,8 @@ import GLOBALS from './globals';
 const lengthSpan = document.querySelector('span.length');
 const levelSpan = document.querySelector('span.level');
 const restartBtn = document.querySelector('.btn-restart');
+const messageText = document.querySelector('text.game-massage');
+const playingField = document.querySelector('#playing-layer');
 
 const graphics = new CanvasGraphics();
 const dieSubject = new Rx.Subject();
@@ -97,13 +99,15 @@ dieSubject.subscribe(cause => {
     switch (cause.TYPE) {
         case 'GAME_OVER':
             restartBtn.removeAttribute('disabled');
+            messageText.classList.add('shown');
+            playingField.classList.add('gameover');
             break;
         default:
             restartBtn.setAttribute('disabled', 'disabled');
+            messageText.classList.remove('shown');
+            playingField.classList.remove('gameover');
             break;
     }
-
-    console.log(cause.message);
 });
 
 snakeLength$.subscribe(len => {
