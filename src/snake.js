@@ -23,13 +23,25 @@ const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-r
 const keys$ = keyDownObservable.map (e => e.which);
 const store$ = rxStore.toRx(Rx);
 
-const pause$ = keys$
-        .filter(code => code === KEYS.SPACE)
+const space$ = keys$
+        .filter(code => code === KEYS.SPACE);
+
+const restart$ = space$
+    .withLatestFrom(dieSubject, (evt, deadEvent) => deadEvent)
+    .filter(dEvt => dEvt.TYPE === 'GAME_OVER');
+
+const pause$ = space$
         .scan(prev => !prev, false);
 
 const direction$ = keys$
         .filter(isDirectionKey)
-        .map(code => getDirection(code));
+        .map(code => getDirection(code))
+        .withLatestFrom(store$, (code, {direction}) => ({code, direction}))
+        .filter(({code, direction}) => !_.cellsCompensative(code, direction))
+        .map(({code, direction}) => code)
+        .withLatestFrom(pause$, (code, paused) => ({code,paused}))
+        .filter(({code,paused}) => paused)
+        .map(({code,paused}) => code);
 
 const directionL = lens('direction');
 
@@ -87,16 +99,19 @@ const createAndPlugRefresh = () => {
         });
 };
 
-restartObservable.subscribe(() => {
-    commands.initState();
-    dieSubject.next({
-        TYPE: 'RESET',
-        message: "Restarting"
-    });
-    levelSpan.innerHTML = String(1);
-    speedSubject.next(GLOBALS.INITIAL_SPEED);
-    createAndPlugRefresh();
-});
+const goRestart = () => {
+  commands.initState();
+  dieSubject.next({
+      TYPE: 'RESET',
+      message: "Restarting"
+  });
+  levelSpan.innerHTML = String(1);
+  speedSubject.next(GLOBALS.INITIAL_SPEED);
+  createAndPlugRefresh();
+}
+
+restartObservable.subscribe(() => goRestart());
+restart$.subscribe(evt => goRestart());
 
 createAndPlugRefresh();
 

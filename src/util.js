@@ -19,9 +19,17 @@ const Utils = {
         return direction;
     },
 
-    cellsEqual: function (c1, c2) {
+    cellsEqual (c1, c2) {
         return c1[0] === c2[0] && c1[1] === c2[1];
     },
+
+    cellsCompensative ([x1,y1], [x2,y2]) {
+      return (( x1 + x2) === 0 && (y1 + y2) === 0);
+    },
+
+    // cellsСompensative: function ([x1,y1], [x2,y2]) {
+    //   return (( x1 + x2) === 0 && (y1 + y2) === 0);
+    // },
 
     initSnake (initDirection) {
         let

@@ -4,7 +4,6 @@ const refreshReducer = (state, action) => {
     let newSnake = state.snake.slice(0),
         head = newSnake[0].slice(0);
 
-    console.log('refreshReducer');
     newSnake.unshift(shiftCell(head, state.direction));
     newSnake.pop();
 
