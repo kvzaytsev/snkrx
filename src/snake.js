@@ -14,6 +14,7 @@ const levelSpan = document.querySelector('span.level');
 const restartBtn = document.querySelector('.btn-restart');
 const messageText = document.querySelector('text.game-massage');
 const playingField = document.querySelector('#playing-layer');
+const tipSpan = document.querySelector('span.tip');
 
 const graphics = new CanvasGraphics();
 const dieSubject = new Rx.Subject();
@@ -101,6 +102,7 @@ const createAndPlugRefresh = () => {
 
 const goRestart = () => {
   commands.initState();
+  tipSpan.innerHTML = 'Press Space to start...'
   dieSubject.next({
       TYPE: 'RESET',
       message: "Restarting"

@@ -90,6 +90,7 @@
 	var restartBtn = document.querySelector('.btn-restart');
 	var messageText = document.querySelector('text.game-massage');
 	var playingField = document.querySelector('#playing-layer');
+	var tipSpan = document.querySelector('span.tip');
 	
 	var graphics = new _graphics2.default();
 	var dieSubject = new _rxjs2.default.Subject();
@@ -198,6 +199,7 @@
 	
 	var goRestart = function goRestart() {
 	    commands.initState();
+	    tipSpan.innerHTML = 'Press Space to start...';
 	    dieSubject.next({
 	        TYPE: 'RESET',
 	        message: "Restarting"
