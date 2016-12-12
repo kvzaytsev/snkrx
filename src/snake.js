@@ -46,6 +46,11 @@ const direction$ = keys$
 
 const directionL = lens('direction');
 
+pause$.subscribe( v => {
+    tipSpan.innerHTML = v
+        ? 'Press Space to pause'
+        : 'Press Space to continue'
+})
 restartBtn.setAttribute('disabled', 'disabled');
 commands.initState();
 graphics.drawGrid();
@@ -102,7 +107,7 @@ const createAndPlugRefresh = () => {
 
 const goRestart = () => {
   commands.initState();
-  tipSpan.innerHTML = 'Press Space to start...'
+
   dieSubject.next({
       TYPE: 'RESET',
       message: "Restarting"
@@ -124,11 +129,13 @@ const snakeLength$ = store$
 dieSubject.subscribe(cause => {
     switch (cause.TYPE) {
         case 'GAME_OVER':
+            tipSpan.innerHTML = 'Press Space to re-start'
             restartBtn.removeAttribute('disabled');
             messageText.classList.add('shown');
             playingField.classList.add('gameover');
             break;
         default:
+            tipSpan.innerHTML = 'Press Space to start'
             restartBtn.setAttribute('disabled', 'disabled');
             messageText.classList.remove('shown');
             playingField.classList.remove('gameover');
