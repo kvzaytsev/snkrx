@@ -19651,6 +19651,11 @@
 	};
 	
 	exports.default = GLOBALS;
+	var FIELD_SIZE = exports.FIELD_SIZE = 30;
+	var CELL_SIZE = exports.CELL_SIZE = 15;
+	var INITIAL_LENGTH = exports.INITIAL_LENGTH = 3;
+	var INITIAL_SPEED = exports.INITIAL_SPEED = 500;
+	var SPEED_STEP = exports.SPEED_STEP = 10;
 
 /***/ },
 /* 351 */
@@ -19727,9 +19732,9 @@
 /*!*********************!*\
   !*** ./src/util.js ***!
   \*********************/
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -19737,13 +19742,12 @@
 	
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
-	var FIELD_SIZE = 30;
-	var INITIAL_SNAKE_SIZE = 3;
+	var _globals = __webpack_require__(/*! ./globals */ 350);
 	
 	var Utils = {
 	    randomInt: function randomInt() {
 	        var min = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 4;
-	        var max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : FIELD_SIZE - 5;
+	        var max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _globals.FIELD_SIZE - 5;
 	
 	        return Math.floor(Math.random() * (max - min + 1)) + min;
 	    },
@@ -19783,7 +19787,7 @@
 	        var head = this.randomCell(),
 	            body = [];
 	
-	        for (var i = 1; i < INITIAL_SNAKE_SIZE; i++) {
+	        for (var i = 1; i < _globals.INITIAL_LENGTH; i++) {
 	            body.push([head[0] - initDirection[0] * i, head[1] - initDirection[1] * i]);
 	        }
 	
@@ -19824,7 +19828,7 @@
 	        var x = _ref6$[0];
 	        var y = _ref6$[1];
 	
-	        return x < 0 || y < 0 || x > FIELD_SIZE - 1 || y > FIELD_SIZE - 1;
+	        return x < 0 || y < 0 || x > _globals.FIELD_SIZE - 1 || y > _globals.FIELD_SIZE - 1;
 	    }
 	};
 	

@@ -1,5 +1,4 @@
-const FIELD_SIZE = 30;
-const INITIAL_SNAKE_SIZE = 3;
+import {FIELD_SIZE, INITIAL_LENGTH} from './globals';
 
 const Utils = {
 
@@ -36,7 +35,7 @@ const Utils = {
             head = this.randomCell(),
             body = [];
 
-        for (let i = 1; i < INITIAL_SNAKE_SIZE; i++ ) {
+        for (let i = 1; i < INITIAL_LENGTH; i++ ) {
             body.push([
                 head[0]-initDirection[0]*i,
                 head[1]-initDirection[1]*i
