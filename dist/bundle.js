@@ -202,7 +202,6 @@
 	
 	var goRestart = function goRestart() {
 	    commands.initState();
-	
 	    dieSubject.next({
 	        TYPE: 'RESET',
 	        message: "Restarting"
@@ -249,8 +248,14 @@
 	
 	snakeLength$.filter(function (len) {
 	    return len % 5 === 0;
-	}).subscribe(function (len) {
-	    speedSubject.next(_globals2.default.INITIAL_SPEED - len * _globals2.default.SPEED_STEP);
+	}).withLatestFrom(speedSubject, function (len, speed) {
+	    return { len: len, speed: speed };
+	}).subscribe(function (_ref7) {
+	    var len = _ref7.len;
+	    var speed = _ref7.speed;
+	
+	    var delta = 10 / len * _globals2.default.SPEED_STEP;
+	    speedSubject.next(speed - delta > 20 ? delta : 20);
 	    levelSpan.innerHTML = String(Math.floor(len / 5) + 1);
 	});
 
@@ -19647,7 +19652,7 @@
 	    CELL_SIZE: 15,
 	    INITIAL_LENGTH: 3,
 	    INITIAL_SPEED: 500,
-	    SPEED_STEP: 10
+	    SPEED_STEP: 50
 	};
 	
 	exports.default = GLOBALS;
@@ -19655,7 +19660,7 @@
 	var CELL_SIZE = exports.CELL_SIZE = 15;
 	var INITIAL_LENGTH = exports.INITIAL_LENGTH = 3;
 	var INITIAL_SPEED = exports.INITIAL_SPEED = 500;
-	var SPEED_STEP = exports.SPEED_STEP = 10;
+	var SPEED_STEP = exports.SPEED_STEP = 50;
 
 /***/ },
 /* 351 */

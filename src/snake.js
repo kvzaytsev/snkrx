@@ -107,7 +107,6 @@ const createAndPlugRefresh = () => {
 
 const goRestart = () => {
   commands.initState();
-
   dieSubject.next({
       TYPE: 'RESET',
       message: "Restarting"
@@ -149,7 +148,9 @@ snakeLength$.subscribe(len => {
 
 snakeLength$
     .filter(len => len % 5 === 0)
-    .subscribe(len => {
-        speedSubject.next(GLOBALS.INITIAL_SPEED - len * GLOBALS.SPEED_STEP);
+    .withLatestFrom(speedSubject, (len, speed) => ({len, speed}))
+    .subscribe(({len, speed}) => {
+        let delta = 10/len * GLOBALS.SPEED_STEP;
+        speedSubject.next(speed - delta > 20 ? delta : 20);
         levelSpan.innerHTML = String(Math.floor(len/5)+1);
     });
