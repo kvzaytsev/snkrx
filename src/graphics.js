@@ -1,4 +1,4 @@
-import Globals from './globals';
+import {FIELD_SIZE, CELL_SIZE} from './globals';
 
 class CanvasGraphics {
 
@@ -12,7 +12,7 @@ class CanvasGraphics {
     }
 
     drawGrid () {
-        let size = Globals.FIELD_SIZE * Globals.CELL_SIZE,
+        let size = FIELD_SIZE * CELL_SIZE,
             canvas = `<canvas id="sCanvas" class="snake-canvas" width="${size}" height="${size}"></canvas>`;
 
         document.getElementById('playing-layer').innerHTML = canvas;
@@ -64,10 +64,10 @@ class CanvasGraphics {
         this.ctx.fillStyle = backgroundColor;
         this.ctx.strokeStyle = borderColor;
         this.ctx.rect(
-            x * Globals.CELL_SIZE + 1,
-            y * Globals.CELL_SIZE + 1,
-            Globals.CELL_SIZE-2,
-            Globals.CELL_SIZE-2
+            x * CELL_SIZE + 1,
+            y * CELL_SIZE + 1,
+            CELL_SIZE-2,
+            CELL_SIZE-2
         );
         this.ctx.fill();
         this.ctx.stroke();

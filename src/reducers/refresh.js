@@ -1,5 +1,3 @@
-import GLOBALS from '../globals';
-
 const refreshReducer = (state, action) => {
     let newSnake = state.snake.slice(0),
         head = newSnake[0].slice(0);

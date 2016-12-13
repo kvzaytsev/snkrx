@@ -79,8 +79,6 @@
 	
 	var _globals = __webpack_require__(/*! ./globals */ 350);
 	
-	var _globals2 = _interopRequireDefault(_globals);
-	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -94,7 +92,7 @@
 	
 	var graphics = new _graphics2.default();
 	var dieSubject = new _rxjs2.default.Subject();
-	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals2.default.INITIAL_SPEED);
+	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals.INITIAL_SPEED);
 	var keyDownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
 	var restartObservable = _rxjs2.default.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
 	var keys$ = keyDownObservable.map(function (e) {
@@ -137,7 +135,6 @@
 	    return paused;
 	}).map(function (_ref5) {
 	    var code = _ref5.code;
-	    var paused = _ref5.paused;
 	    return code;
 	});
 	
@@ -207,7 +204,7 @@
 	        message: "Restarting"
 	    });
 	    levelSpan.innerHTML = String(1);
-	    speedSubject.next(_globals2.default.INITIAL_SPEED);
+	    speedSubject.next(_globals.INITIAL_SPEED);
 	    createAndPlugRefresh();
 	};
 	
@@ -254,7 +251,7 @@
 	    var len = _ref7.len;
 	    var speed = _ref7.speed;
 	
-	    var delta = 10 / len * _globals2.default.SPEED_STEP;
+	    var delta = 10 / len * _globals.SPEED_STEP;
 	    speedSubject.next(speed - delta > 20 ? delta : 20);
 	    levelSpan.innerHTML = String(Math.floor(len / 5) + 1);
 	});
@@ -19591,21 +19588,15 @@
 /*!*********************************!*\
   !*** ./src/reducers/refresh.js ***!
   \*********************************/
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
 	
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-	
-	var _globals = __webpack_require__(/*! ../globals */ 350);
-	
-	var _globals2 = _interopRequireDefault(_globals);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var refreshReducer = function refreshReducer(state, action) {
 	    var newSnake = state.snake.slice(0),
@@ -19645,17 +19636,8 @@
 	"use strict";
 	
 	Object.defineProperty(exports, "__esModule", {
-	    value: true
+	  value: true
 	});
-	var GLOBALS = {
-	    FIELD_SIZE: 30,
-	    CELL_SIZE: 15,
-	    INITIAL_LENGTH: 3,
-	    INITIAL_SPEED: 500,
-	    SPEED_STEP: 50
-	};
-	
-	exports.default = GLOBALS;
 	var FIELD_SIZE = exports.FIELD_SIZE = 30;
 	var CELL_SIZE = exports.CELL_SIZE = 15;
 	var INITIAL_LENGTH = exports.INITIAL_LENGTH = 3;
@@ -20374,10 +20356,6 @@
 	
 	var _globals = __webpack_require__(/*! ./globals */ 350);
 	
-	var _globals2 = _interopRequireDefault(_globals);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var CanvasGraphics = function () {
@@ -20398,7 +20376,7 @@
 	    }, {
 	        key: 'drawGrid',
 	        value: function drawGrid() {
-	            var size = _globals2.default.FIELD_SIZE * _globals2.default.CELL_SIZE,
+	            var size = _globals.FIELD_SIZE * _globals.CELL_SIZE,
 	                canvas = '<canvas id="sCanvas" class="snake-canvas" width="' + size + '" height="' + size + '"></canvas>';
 	
 	            document.getElementById('playing-layer').innerHTML = canvas;
@@ -20468,7 +20446,7 @@
 	            this.ctx.beginPath();
 	            this.ctx.fillStyle = backgroundColor;
 	            this.ctx.strokeStyle = borderColor;
-	            this.ctx.rect(x * _globals2.default.CELL_SIZE + 1, y * _globals2.default.CELL_SIZE + 1, _globals2.default.CELL_SIZE - 2, _globals2.default.CELL_SIZE - 2);
+	            this.ctx.rect(x * _globals.CELL_SIZE + 1, y * _globals.CELL_SIZE + 1, _globals.CELL_SIZE - 2, _globals.CELL_SIZE - 2);
 	            this.ctx.fill();
 	            this.ctx.stroke();
 	        }

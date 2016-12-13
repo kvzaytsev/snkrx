@@ -7,7 +7,7 @@ import * as commands from './commands';
 import _ from './util';
 import {getDirection, isDirectionKey, KEYS} from './keyboard';
 import CanvasGraphics from './graphics';
-import GLOBALS from './globals';
+import {INITIAL_SPEED, SPEED_STEP} from './globals';
 
 const lengthSpan = document.querySelector('span.length');
 const levelSpan = document.querySelector('span.level');
@@ -18,7 +18,7 @@ const tipSpan = document.querySelector('span.tip');
 
 const graphics = new CanvasGraphics();
 const dieSubject = new Rx.Subject();
-const speedSubject = new Rx.BehaviorSubject(GLOBALS.INITIAL_SPEED);
+const speedSubject = new Rx.BehaviorSubject(INITIAL_SPEED);
 const keyDownObservable = Rx.Observable.fromEvent(document, 'keydown');
 const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
 const keys$ = keyDownObservable.map (e => e.which);
@@ -42,7 +42,7 @@ const direction$ = keys$
         .map(({code, direction}) => code)
         .withLatestFrom(pause$, (code, paused) => ({code,paused}))
         .filter(({code,paused}) => paused)
-        .map(({code,paused}) => code);
+        .map(({code}) => code);
 
 const directionL = lens('direction');
 
@@ -112,7 +112,7 @@ const goRestart = () => {
       message: "Restarting"
   });
   levelSpan.innerHTML = String(1);
-  speedSubject.next(GLOBALS.INITIAL_SPEED);
+  speedSubject.next(INITIAL_SPEED);
   createAndPlugRefresh();
 }
 
@@ -150,7 +150,7 @@ snakeLength$
     .filter(len => len % 5 === 0)
     .withLatestFrom(speedSubject, (len, speed) => ({len, speed}))
     .subscribe(({len, speed}) => {
-        let delta = 10/len * GLOBALS.SPEED_STEP;
+        let delta = 10/len * SPEED_STEP;
         speedSubject.next(speed - delta > 20 ? delta : 20);
         levelSpan.innerHTML = String(Math.floor(len/5)+1);
     });
