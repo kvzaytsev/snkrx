@@ -151,8 +151,8 @@ snakeLength$
     .withLatestFrom(speedSubject, (len, speed) => ({len, speed}))
     .subscribe(({len, speed}) => {
         let delta = 10/len * SPEED_STEP;
-        speedSubject.next(speed - (delta > 20
+        speedSubject.next(speed - (delta > 10
             ? delta
-            : 20));
+            : 10));
         levelSpan.innerHTML = String(Math.floor(len/5)+1);
     });
