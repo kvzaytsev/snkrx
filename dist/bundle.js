@@ -63,11 +63,11 @@
 	
 	var reducers = _interopRequireWildcard(_reducers);
 	
-	var _commands = __webpack_require__(/*! ./commands */ 351);
+	var _commands = __webpack_require__(/*! ./commands */ 350);
 	
 	var commands = _interopRequireWildcard(_commands);
 	
-	var _util = __webpack_require__(/*! ./util */ 353);
+	var _util = __webpack_require__(/*! ./util */ 352);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
@@ -77,7 +77,7 @@
 	
 	var _graphics2 = _interopRequireDefault(_graphics);
 	
-	var _globals = __webpack_require__(/*! ./globals */ 350);
+	var _globals = __webpack_require__(/*! ./globals */ 353);
 	
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 	
@@ -252,7 +252,7 @@
 	    var speed = _ref7.speed;
 	
 	    var delta = 10 / len * _globals.SPEED_STEP;
-	    speedSubject.next(speed - delta > 20 ? delta : 20);
+	    speedSubject.next(speed - (delta > 20 ? delta : 20));
 	    levelSpan.innerHTML = String(Math.floor(len / 5) + 1);
 	});
 
@@ -19628,24 +19628,6 @@
 
 /***/ },
 /* 350 */
-/*!************************!*\
-  !*** ./src/globals.js ***!
-  \************************/
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var FIELD_SIZE = exports.FIELD_SIZE = 30;
-	var CELL_SIZE = exports.CELL_SIZE = 15;
-	var INITIAL_LENGTH = exports.INITIAL_LENGTH = 3;
-	var INITIAL_SPEED = exports.INITIAL_SPEED = 500;
-	var SPEED_STEP = exports.SPEED_STEP = 50;
-
-/***/ },
-/* 351 */
 /*!*******************************!*\
   !*** ./src/commands/index.js ***!
   \*******************************/
@@ -19658,7 +19640,7 @@
 	});
 	exports.initState = exports.setPoop = exports.eatApple = exports.setApple = undefined;
 	
-	var _setApple = __webpack_require__(/*! ./setApple */ 352);
+	var _setApple = __webpack_require__(/*! ./setApple */ 351);
 	
 	var _setApple2 = _interopRequireDefault(_setApple);
 	
@@ -19682,7 +19664,7 @@
 	exports.initState = _initState2.default;
 
 /***/ },
-/* 352 */
+/* 351 */
 /*!**********************************!*\
   !*** ./src/commands/setApple.js ***!
   \**********************************/
@@ -19700,7 +19682,7 @@
 	
 	var _state2 = _interopRequireDefault(_state);
 	
-	var _util = __webpack_require__(/*! ../util */ 353);
+	var _util = __webpack_require__(/*! ../util */ 352);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
@@ -19715,7 +19697,7 @@
 	exports.default = setAppleCommand;
 
 /***/ },
-/* 353 */
+/* 352 */
 /*!*********************!*\
   !*** ./src/util.js ***!
   \*********************/
@@ -19729,7 +19711,7 @@
 	
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
-	var _globals = __webpack_require__(/*! ./globals */ 350);
+	var _globals = __webpack_require__(/*! ./globals */ 353);
 	
 	var Utils = {
 	    randomInt: function randomInt() {
@@ -19822,6 +19804,24 @@
 	exports.default = Utils;
 
 /***/ },
+/* 353 */
+/*!************************!*\
+  !*** ./src/globals.js ***!
+  \************************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var FIELD_SIZE = exports.FIELD_SIZE = 30;
+	var CELL_SIZE = exports.CELL_SIZE = 15;
+	var INITIAL_LENGTH = exports.INITIAL_LENGTH = 3;
+	var INITIAL_SPEED = exports.INITIAL_SPEED = 500;
+	var SPEED_STEP = exports.SPEED_STEP = 50;
+
+/***/ },
 /* 354 */
 /*!**********************************!*\
   !*** ./src/commands/eatApple.js ***!
@@ -19840,7 +19840,7 @@
 	
 	var _state2 = _interopRequireDefault(_state);
 	
-	var _util = __webpack_require__(/*! ../util */ 353);
+	var _util = __webpack_require__(/*! ../util */ 352);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
@@ -19872,7 +19872,7 @@
 	
 	var _stk = __webpack_require__(/*! stk */ 356);
 	
-	var _util = __webpack_require__(/*! ../util */ 353);
+	var _util = __webpack_require__(/*! ../util */ 352);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
@@ -20270,7 +20270,7 @@
 	
 	var _state2 = _interopRequireDefault(_state);
 	
-	var _util = __webpack_require__(/*! ../util */ 353);
+	var _util = __webpack_require__(/*! ../util */ 352);
 	
 	var _util2 = _interopRequireDefault(_util);
 	
@@ -20354,7 +20354,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _globals = __webpack_require__(/*! ./globals */ 350);
+	var _globals = __webpack_require__(/*! ./globals */ 353);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
