@@ -15,6 +15,7 @@ const restartBtn = document.querySelector('.btn-restart');
 const messageText = document.querySelector('text.game-massage');
 const playingField = document.querySelector('#playing-layer');
 const tipSpan = document.querySelector('span.tip');
+const intervalSpan = document.querySelector('span.interval');
 
 const graphics = new CanvasGraphics();
 const dieSubject = new Rx.Subject();
@@ -37,12 +38,15 @@ const pause$ = space$
 const direction$ = keys$
         .filter(isDirectionKey)
         .map(code => getDirection(code))
-        .withLatestFrom(store$, (code, {direction}) => ({code, direction}))
-        .filter(({code, direction}) => !_.cellsCompensative(code, direction))
-        .map(({code, direction}) => code)
-        .withLatestFrom(pause$, (code, paused) => ({code,paused}))
-        .filter(({code,paused}) => paused)
-        .map(({code}) => code);
+        .withLatestFrom(
+            store$,
+            (newDirection, {direction}) => ({newDirection, direction})
+        )
+        .filter(({newDirection, direction}) => !_.cellsCompensative(newDirection, direction))
+        .map(({newDirection, direction}) => newDirection)
+        .withLatestFrom(pause$, (newDirection, paused) => ({newDirection,paused}))
+        .filter(({paused}) => paused)
+        .map(({newDirection}) => newDirection);
 
 const directionL = lens('direction');
 
@@ -150,9 +154,13 @@ snakeLength$
     .filter(len => len % 5 === 0)
     .withLatestFrom(speedSubject, (len, speed) => ({len, speed}))
     .subscribe(({len, speed}) => {
-        let delta = 10/len * SPEED_STEP;
+        let delta = Math.floor(10/len * SPEED_STEP);
         speedSubject.next(speed - (delta > 10
             ? delta
             : 10));
         levelSpan.innerHTML = String(Math.floor(len/5)+1);
     });
+
+speedSubject.subscribe(int => {
+    intervalSpan.innerHTML = String(int);
+});

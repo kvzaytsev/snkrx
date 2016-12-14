@@ -89,6 +89,7 @@
 	var messageText = document.querySelector('text.game-massage');
 	var playingField = document.querySelector('#playing-layer');
 	var tipSpan = document.querySelector('span.tip');
+	var intervalSpan = document.querySelector('span.interval');
 	
 	var graphics = new _graphics2.default();
 	var dieSubject = new _rxjs2.default.Subject();
@@ -116,26 +117,25 @@
 	
 	var direction$ = keys$.filter(_keyboard.isDirectionKey).map(function (code) {
 	    return (0, _keyboard.getDirection)(code);
-	}).withLatestFrom(store$, function (code, _ref) {
+	}).withLatestFrom(store$, function (newDirection, _ref) {
 	    var direction = _ref.direction;
-	    return { code: code, direction: direction };
+	    return { newDirection: newDirection, direction: direction };
 	}).filter(function (_ref2) {
-	    var code = _ref2.code;
+	    var newDirection = _ref2.newDirection;
 	    var direction = _ref2.direction;
-	    return !_util2.default.cellsCompensative(code, direction);
+	    return !_util2.default.cellsCompensative(newDirection, direction);
 	}).map(function (_ref3) {
-	    var code = _ref3.code;
+	    var newDirection = _ref3.newDirection;
 	    var direction = _ref3.direction;
-	    return code;
-	}).withLatestFrom(pause$, function (code, paused) {
-	    return { code: code, paused: paused };
+	    return newDirection;
+	}).withLatestFrom(pause$, function (newDirection, paused) {
+	    return { newDirection: newDirection, paused: paused };
 	}).filter(function (_ref4) {
-	    var code = _ref4.code;
 	    var paused = _ref4.paused;
 	    return paused;
 	}).map(function (_ref5) {
-	    var code = _ref5.code;
-	    return code;
+	    var newDirection = _ref5.newDirection;
+	    return newDirection;
 	});
 	
 	var directionL = (0, _rstore.lens)('direction');
@@ -251,9 +251,13 @@
 	    var len = _ref7.len;
 	    var speed = _ref7.speed;
 	
-	    var delta = 10 / len * _globals.SPEED_STEP;
+	    var delta = Math.floor(10 / len * _globals.SPEED_STEP);
 	    speedSubject.next(speed - (delta > 10 ? delta : 10));
 	    levelSpan.innerHTML = String(Math.floor(len / 5) + 1);
+	});
+	
+	speedSubject.subscribe(function (int) {
+	    intervalSpan.innerHTML = String(int);
 	});
 
 /***/ },
