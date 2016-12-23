@@ -1,6 +1,5 @@
 import {lens}  from 'rstore';
 import {eventCreatorFactory, commandCreatorFactory} from 'stk';
-import _ from '../util';
 
 const poopL = lens('poop');
 const setPoopEvent = eventCreatorFactory(poopL.set);

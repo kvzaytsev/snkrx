@@ -12,11 +12,11 @@ class CanvasGraphics {
     }
 
     drawGrid () {
-        let size = FIELD_SIZE * CELL_SIZE,
-            canvas = `<canvas id="sCanvas" class="snake-canvas" width="${size}" height="${size}"></canvas>`;
+        let size = FIELD_SIZE * CELL_SIZE;
 
-        document.getElementById('playing-layer').innerHTML = canvas;
         this.canvas = document.getElementById("sCanvas");
+        this.canvas.setAttribute('width', size);
+        this.canvas.setAttribute('height', size);
         this.ctx = this.canvas.getContext("2d");
     }
 

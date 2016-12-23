@@ -1,6 +1,5 @@
 import {lens}  from 'rstore';
 import rxStore from '../state';
-import _ from '../util';
 
 const snakeL = lens('snake');
 const eatAppleEvent = rxStore.eventCreatorFactory(snakeL.set);

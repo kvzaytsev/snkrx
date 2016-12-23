@@ -1,4 +1,4 @@
-const KEYS = {
+export const KEYS = {
     SPACE: 32,
     LEFT: 37,
     UP: 38,
@@ -6,7 +6,7 @@ const KEYS = {
     DOWN: 40
 };
 
-const getDirection = (keyCode) => {
+export const getDirection = (keyCode) => {
     switch (keyCode) {
     case KEYS.LEFT:
         return [-1,0];
@@ -17,10 +17,8 @@ const getDirection = (keyCode) => {
     case KEYS.RIGHT:
         return [1,0];
     }
-}
+};
 
-const isDirectionKey = (keyCode) => {
+export const isDirectionKey = (keyCode) => {
     return [KEYS.LEFT, KEYS.UP, KEYS.DOWN, KEYS.RIGHT].includes(keyCode)
-}
-
-export {getDirection, isDirectionKey, KEYS};
+};

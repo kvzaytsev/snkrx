@@ -1,6 +1,6 @@
 import {lens}  from 'rstore';
 import rxStore from '../state';
-import _ from '../util';
+import {randomDirection, initSnake, generateApple} from '../util';
 
 const appleL = lens('apple');
 const snakeL = lens('snake');
@@ -12,9 +12,9 @@ const setDirectionEvent = rxStore.eventCreatorFactory(directionL.set);
 
 const initStateCommand = rxStore.commandCreatorFactory(() => {
     const
-        initialDirection = _.randomDirection(),
-        initialSnake = _.initSnake(initialDirection),
-        initialApple = _.generateApple(initialSnake);
+        initialDirection = randomDirection(),
+        initialSnake = initSnake(initialDirection),
+        initialApple = generateApple(initialSnake);
 
     setDirectionEvent(initialDirection);
     setSnakeEvent(initialSnake);
