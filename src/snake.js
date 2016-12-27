@@ -4,7 +4,7 @@ import {lens}  from 'rstore';
 import rxStore from './state';
 import * as reducers from './reducers';
 import * as commands from './commands';
-import {cellsCompensative, checkOutOfBounds, cellsEqual, checkSelfEating} from './util';
+import {cellsCompensative, checkOutOfBounds, cellsEqual, checkSelfEating, compose} from './util';
 import {getDirection, isDirectionKey, KEYS} from './keyboard';
 import CanvasGraphics from './graphics';
 import {INITIAL_SPEED, SPEED_STEP} from './globals';
@@ -25,30 +25,23 @@ const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-r
 const keys$ = keyDownObservable.map(e => e.which);
 const store$ = rxStore.toRx(Rx);
 const space$ = keys$.filter(code => code === KEYS.SPACE);
+const directionL = lens('direction');
 
 const restart$ = space$
     .withLatestFrom(dieSubject, (evt, deadEvent) => deadEvent)
     .filter(dEvt => dEvt.TYPE === 'GAME_OVER');
 
-const pause$ = space$
-    .scan(prev => !prev, false);
+const pause$ = space$.scan(prev => !prev, false);
 
 const direction$ = keys$
     .filter(isDirectionKey)
     .map(code => getDirection(code))
-    .withLatestFrom(
-        store$,
-        (newDirection, {direction}) => ({newDirection, direction})
-    )
-    .filter(({newDirection, direction}) => {
-        return !cellsCompensative(newDirection, direction);
-    })
+    .withLatestFrom(store$,(newDirection, {direction}) => ({newDirection, direction}))
+    .filter(({newDirection, direction}) => !cellsCompensative(newDirection, direction))
     .map(({newDirection, direction}) => newDirection)
     .withLatestFrom(pause$, (newDirection, paused) => ({newDirection,paused}))
     .filter(({paused}) => paused)
     .map(({newDirection}) => newDirection);
-
-const directionL = lens('direction');
 
 pause$.subscribe( v => {
     tipSpan.innerHTML = v
@@ -71,44 +64,38 @@ rxStore.subscribe(state => {
 
 const moving$ = Rx.Observable.merge(speedSubject, direction$);
 
-const createRefreshStresm = () => {
-    return Promise.resolve(
-        speedSubject
-            .combineLatest(moving$, speed => speed)
-            .switchMap(speed => Rx.Observable.timer(0, speed))
-            .withLatestFrom(pause$, (smth, paused) => paused)
-            .filter(p => p)
-            .takeUntil(dieSubject)
-        );
-}
+const createRefreshStresm = () => speedSubject
+    .combineLatest(moving$, speed => speed)
+    .switchMap(speed => Rx.Observable.timer(0, speed))
+    .withLatestFrom(pause$, (smth, paused) => paused)
+    .filter(p => p)
+    .takeUntil(dieSubject);
 
 const plugRefreshStream = (rStream) => {
     rxStore.plug(rStream, reducers.refresh);
     return rStream;
 };
 
-const createAndPlugRefresh = () => {
-    createRefreshStresm()
-        .then(plugRefreshStream)
-        .then(rStream => store$.sample(rStream, state => state))
-        .then(cycle$ => {
-            cycle$.subscribe(state => {
-                let snake = state.snake.slice(0),
-                    head = snake[0].slice(0),
-                    anApple = state.apple.slice(0);
+const createAndPlugRefresh = compose(
+    createRefreshStresm,
+    plugRefreshStream,
+    rStream => store$.sample(rStream, state => state),
+    cycle$ => cycle$.subscribe(state => {
+        let snake = state.snake.slice(0),
+            head = snake[0].slice(0),
+            anApple = state.apple.slice(0);
 
-                if (cellsEqual(head, anApple)) {
-                    commands.eatApple(snake, anApple);
-                    commands.setApple(snake);
-                } else if (checkSelfEating(snake)) {
-                    dieSubject.next({
-                        TYPE: 'GAME_OVER',
-                        message: "Self Eating"
-                    });
-                }
+        if (cellsEqual(head, anApple)) {
+            commands.eatApple(snake, anApple);
+            commands.setApple(snake);
+        } else if (checkSelfEating(snake)) {
+            dieSubject.next({
+                TYPE: 'GAME_OVER',
+                message: "Self Eating"
             });
-        });
-};
+        }
+    })
+);
 
 const goRestart = () => {
   commands.initState();

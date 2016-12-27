@@ -101,6 +101,7 @@
 	var space$ = keys$.filter(function (code) {
 	    return code === _keyboard.KEYS.SPACE;
 	});
+	var directionL = (0, _rstore.lens)('direction');
 	
 	var restart$ = space$.withLatestFrom(dieSubject, function (evt, deadEvent) {
 	    return deadEvent;
@@ -120,7 +121,6 @@
 	}).filter(function (_ref2) {
 	    var newDirection = _ref2.newDirection;
 	    var direction = _ref2.direction;
-	
 	    return !(0, _util.cellsCompensative)(newDirection, direction);
 	}).map(function (_ref3) {
 	    var newDirection = _ref3.newDirection;
@@ -135,8 +135,6 @@
 	    var newDirection = _ref5.newDirection;
 	    return newDirection;
 	});
-	
-	var directionL = (0, _rstore.lens)('direction');
 	
 	pause$.subscribe(function (v) {
 	    tipSpan.innerHTML = v ? 'Press Space to pause' : 'Press Space to continue';
@@ -156,7 +154,7 @@
 	var moving$ = _rxjs2.default.Observable.merge(speedSubject, direction$);
 	
 	var createRefreshStresm = function createRefreshStresm() {
-	    return Promise.resolve(speedSubject.combineLatest(moving$, function (speed) {
+	    return speedSubject.combineLatest(moving$, function (speed) {
 	        return speed;
 	    }).switchMap(function (speed) {
 	        return _rxjs2.default.Observable.timer(0, speed);
@@ -164,7 +162,7 @@
 	        return paused;
 	    }).filter(function (p) {
 	        return p;
-	    }).takeUntil(dieSubject));
+	    }).takeUntil(dieSubject);
 	};
 	
 	var plugRefreshStream = function plugRefreshStream(rStream) {
@@ -172,29 +170,27 @@
 	    return rStream;
 	};
 	
-	var createAndPlugRefresh = function createAndPlugRefresh() {
-	    createRefreshStresm().then(plugRefreshStream).then(function (rStream) {
-	        return store$.sample(rStream, function (state) {
-	            return state;
-	        });
-	    }).then(function (cycle$) {
-	        cycle$.subscribe(function (state) {
-	            var snake = state.snake.slice(0),
-	                head = snake[0].slice(0),
-	                anApple = state.apple.slice(0);
-	
-	            if ((0, _util.cellsEqual)(head, anApple)) {
-	                commands.eatApple(snake, anApple);
-	                commands.setApple(snake);
-	            } else if ((0, _util.checkSelfEating)(snake)) {
-	                dieSubject.next({
-	                    TYPE: 'GAME_OVER',
-	                    message: "Self Eating"
-	                });
-	            }
-	        });
+	var createAndPlugRefresh = (0, _util.compose)(createRefreshStresm, plugRefreshStream, function (rStream) {
+	    return store$.sample(rStream, function (state) {
+	        return state;
 	    });
-	};
+	}, function (cycle$) {
+	    return cycle$.subscribe(function (state) {
+	        var snake = state.snake.slice(0),
+	            head = snake[0].slice(0),
+	            anApple = state.apple.slice(0);
+	
+	        if ((0, _util.cellsEqual)(head, anApple)) {
+	            commands.eatApple(snake, anApple);
+	            commands.setApple(snake);
+	        } else if ((0, _util.checkSelfEating)(snake)) {
+	            dieSubject.next({
+	                TYPE: 'GAME_OVER',
+	                message: "Self Eating"
+	            });
+	        }
+	    });
+	});
 	
 	var goRestart = function goRestart() {
 	    commands.initState();
@@ -19875,7 +19871,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.checkSelfEating = exports.generateApple = exports.initSnake = exports.randomDirection = exports.checkOutOfBounds = exports.cellsCompensative = exports.cellsEqual = exports.randomCell = exports.randomInt = undefined;
+	exports.checkSelfEating = exports.generateApple = exports.initSnake = exports.randomDirection = exports.compose = exports.checkOutOfBounds = exports.cellsCompensative = exports.cellsEqual = exports.randomCell = exports.randomInt = undefined;
 	
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
@@ -19916,6 +19912,18 @@
 	    var x = _ref6$[0];
 	    var y = _ref6$[1];
 	    return x < 0 || y < 0 || x > _globals.FIELD_SIZE - 1 || y > _globals.FIELD_SIZE - 1;
+	};
+	
+	var compose = exports.compose = function compose() {
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	    }
+	
+	    return function (a) {
+	        return args.reduce(function (res, cur) {
+	            return cur(res);
+	        }, a);
+	    };
 	};
 	
 	var randomDirection = exports.randomDirection = function randomDirection() {

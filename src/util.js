@@ -10,6 +10,8 @@ export const cellsCompensative = ([x1,y1], [x2,y2]) => (( x1 + x2) === 0 && (y1 
 
 export const checkOutOfBounds = ([[x,y]]) => (x < 0 || y < 0 || x > FIELD_SIZE-1 || y > FIELD_SIZE-1);
 
+export const compose = (...args) => (a) => args.reduce((res,cur) => cur(res), a);
+
 export const randomDirection = () => {
     let direction = randomCell(0, 1);
     if (cellsEqual(direction,[0,0]) || cellsEqual(direction,[1,1])) {
