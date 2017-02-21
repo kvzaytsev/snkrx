@@ -11,7 +11,6 @@ import {INITIAL_SPEED, SPEED_STEP} from './globals';
 
 const lengthSpan = document.querySelector('span.length');
 const levelSpan = document.querySelector('span.level');
-const restartBtn = document.querySelector('.btn-restart');
 const messageText = document.querySelector('text.game-massage');
 const playingField = document.querySelector('#playing-layer');
 const tipSpan = document.querySelector('span.tip');
@@ -21,7 +20,6 @@ const graphics = new CanvasGraphics();
 const dieSubject = new Rx.Subject();
 const speedSubject = new Rx.BehaviorSubject(INITIAL_SPEED);
 const keyDownObservable = Rx.Observable.fromEvent(document, 'keydown');
-const restartObservable = Rx.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
 const keys$ = keyDownObservable.map(e => e.which);
 const store$ = rxStore.toRx(Rx);
 const space$ = keys$.filter(code => code === KEYS.SPACE);
@@ -49,7 +47,6 @@ pause$.subscribe( v => {
         : 'Press Space to continue'
 });
 
-restartBtn.setAttribute('disabled', 'disabled');
 commands.initState();
 graphics.drawGrid();
 rxStore.plug(direction$, directionL.set);
@@ -108,9 +105,7 @@ const goRestart = () => {
   createAndPlugRefresh();
 }
 
-Rx.Observable
-    .merge(restartObservable, restart$)
-    .subscribe(goRestart);
+restart$.subscribe(goRestart);
 
 createAndPlugRefresh();
 
@@ -121,14 +116,12 @@ const snakeLength$ = store$
 dieSubject.subscribe(cause => {
     switch (cause.TYPE) {
         case 'GAME_OVER':
-            tipSpan.innerHTML = 'Press Space to re-start';
-            restartBtn.removeAttribute('disabled');
+            tipSpan.innerHTML = 'Press Space to re-start';;
             messageText.classList.add('shown');
             playingField.classList.add('gameover');
             break;
         default:
             tipSpan.innerHTML = 'Press Space to start'
-            restartBtn.setAttribute('disabled', 'disabled');
             messageText.classList.remove('shown');
             playingField.classList.remove('gameover');
             break;

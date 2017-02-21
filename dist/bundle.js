@@ -83,7 +83,6 @@
 	
 	var lengthSpan = document.querySelector('span.length');
 	var levelSpan = document.querySelector('span.level');
-	var restartBtn = document.querySelector('.btn-restart');
 	var messageText = document.querySelector('text.game-massage');
 	var playingField = document.querySelector('#playing-layer');
 	var tipSpan = document.querySelector('span.tip');
@@ -93,7 +92,6 @@
 	var dieSubject = new _rxjs2.default.Subject();
 	var speedSubject = new _rxjs2.default.BehaviorSubject(_globals.INITIAL_SPEED);
 	var keyDownObservable = _rxjs2.default.Observable.fromEvent(document, 'keydown');
-	var restartObservable = _rxjs2.default.Observable.fromEvent(document.querySelector('.btn-restart'), 'click');
 	var keys$ = keyDownObservable.map(function (e) {
 	    return e.which;
 	});
@@ -140,7 +138,6 @@
 	    tipSpan.innerHTML = v ? 'Press Space to pause' : 'Press Space to continue';
 	});
 	
-	restartBtn.setAttribute('disabled', 'disabled');
 	commands.initState();
 	graphics.drawGrid();
 	_state2.default.plug(direction$, directionL.set);
@@ -203,7 +200,7 @@
 	    createAndPlugRefresh();
 	};
 	
-	_rxjs2.default.Observable.merge(restartObservable, restart$).subscribe(goRestart);
+	restart$.subscribe(goRestart);
 	
 	createAndPlugRefresh();
 	
@@ -215,14 +212,12 @@
 	dieSubject.subscribe(function (cause) {
 	    switch (cause.TYPE) {
 	        case 'GAME_OVER':
-	            tipSpan.innerHTML = 'Press Space to re-start';
-	            restartBtn.removeAttribute('disabled');
+	            tipSpan.innerHTML = 'Press Space to re-start';;
 	            messageText.classList.add('shown');
 	            playingField.classList.add('gameover');
 	            break;
 	        default:
 	            tipSpan.innerHTML = 'Press Space to start';
-	            restartBtn.setAttribute('disabled', 'disabled');
 	            messageText.classList.remove('shown');
 	            playingField.classList.remove('gameover');
 	            break;
