@@ -1,10 +1,11 @@
 import Rx from 'rxjs';
 import {lens}  from 'rstore';
+import {compose} from 'frutils';
 
 import rxStore from './state';
 import * as reducers from './reducers';
 import * as commands from './commands';
-import {cellsCompensative, checkOutOfBounds, cellsEqual, checkSelfEating, compose} from './util';
+import {cellsCompensative, checkOutOfBounds, cellsEqual, checkSelfEating} from './util';
 import {getDirection, isDirectionKey, KEYS} from './keyboard';
 import CanvasGraphics from './graphics';
 import {INITIAL_SPEED, SPEED_STEP} from './globals';
